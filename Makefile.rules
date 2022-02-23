@@ -8,6 +8,9 @@ back : $(DST)/traffic-lights
 $(DST)/traffic-lights : $(foreach f,$(BACK_FILES),$(SRC)/back/$(f))
 	$(GOBUILD)
 
+test :
+	go test $(SRC)/back/*.go
+
 #
 
 front :
