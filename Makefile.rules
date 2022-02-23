@@ -1,0 +1,19 @@
+BACK_FILES:=Crossing.go Direction.go Lane.go main.go
+GOBUILD=go build -o $@ $^
+
+#
+
+back : $(DST)/traffic-lights
+
+$(DST)/traffic-lights : $(foreach f,$(BACK_FILES),$(SRC)/back/$(f))
+	$(GOBUILD)
+
+#
+
+front :
+	rm --recursive --force $(DST)/static
+	cp --archive $(SRC)/static $(DST)/static
+
+#
+
+all : back front
