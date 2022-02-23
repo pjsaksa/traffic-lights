@@ -1,11 +1,14 @@
 package main
 
 type Crossing struct {
-	lanes map[Lane]struct{}
+	claimType string
+	lanes     map[Lane]struct{}
+	claims    map[Lane]Claim
 }
 
 func NewCrossing() Crossing {
 	return Crossing{
+		claimType: "daytime",
 		lanes: map[Lane]struct{}{
 			{ NORTH, EAST  }: struct{}{},
 			{ NORTH, SOUTH }: struct{}{},
@@ -20,27 +23,34 @@ func NewCrossing() Crossing {
 			{ WEST,  EAST  }: struct{}{},
 			{ WEST,  SOUTH }: struct{}{},
 		},
+		claims: map[Lane]Claim{},
 	}
 }
 
-func (cr Crossing) Valid(lane Lane) {
-	_,ok := cr.lanes[lane]
-	if !ok {
-		panic("invalid lane: " + lane.String())
-	}
-}
+// methods
 
-func (cr Crossing) Blocks_(x,y Lane) bool {
-	if x.IsLeft() {
-		return !y.IsRight()
-	}
+func (cr Crossing) AccessClaim(l Lane) Claim {
+	if c,ok := cr.claims[l] ; ok {
+		return c
+	} else {
+		var c2 Claim
 
-	if x.IsStraight() {
-		return TurnCCW(x.from) == y.from ||
-			TurnCCW(x.from) == y.to
-	}
+		switch cr.claimType {
+		case "daytime":
+			c2 = &DaytimeClaim{
+				ClaimBase: ClaimBase{
+					crossing: &cr,
+					lane: l,
+				},
+			}
+		default:
+			panic("invalid claim type: " + cr.claimType)
+		}
 
-	return false
+		cr.claims[l] = c2
+
+		return c2
+	}
 }
 
 func (cr Crossing) Blocks(x,y Lane) bool {
@@ -55,5 +65,27 @@ func (cr Crossing) Blocks(x,y Lane) bool {
 		return false
 	}
 
-	return cr.Blocks_(x, y) || cr.Blocks_(y, x)
+	return blocks2(cr, x, y) || blocks2(cr, y, x)
+}
+
+func (cr Crossing) Valid(lane Lane) {
+	_,ok := cr.lanes[lane]
+	if !ok {
+		panic("invalid lane: " + lane.String())
+	}
+}
+
+// private functions
+
+func blocks2(cr Crossing, x,y Lane) bool {
+	if x.IsLeft() {
+		return !y.IsRight()
+	}
+
+	if x.IsStraight() {
+		return TurnCCW(x.from) == y.from ||
+			TurnCCW(x.from) == y.to
+	}
+
+	return false
 }
