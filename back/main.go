@@ -18,7 +18,7 @@ func testOneBlock(cr Crossing, x,y Lane) {
 
 func testAllBlocks(cr Crossing) {
 	for i := range cr.lanes {
-		testOneBlock(cr, Lane{ South, West }, i)
+		testOneBlock(cr, Lane{ SOUTH, WEST }, i)
 	}
 }
 

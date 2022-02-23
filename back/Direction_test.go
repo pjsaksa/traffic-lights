@@ -3,10 +3,10 @@ package main
 import "fmt"
 
 func ExampleTurnCW() {
-	fmt.Println(TurnCW(North).String())
-	fmt.Println(TurnCW(East).String())
-	fmt.Println(TurnCW(South).String())
-	fmt.Println(TurnCW(West).String())
+	fmt.Println(TurnCW(NORTH).String())
+	fmt.Println(TurnCW(EAST).String())
+	fmt.Println(TurnCW(SOUTH).String())
+	fmt.Println(TurnCW(WEST).String())
 
 	// Output:
 	// E
@@ -16,10 +16,10 @@ func ExampleTurnCW() {
 }
 
 func ExampleTurnCCW() {
-	fmt.Println(TurnCCW(North).String())
-	fmt.Println(TurnCCW(East).String())
-	fmt.Println(TurnCCW(South).String())
-	fmt.Println(TurnCCW(West).String())
+	fmt.Println(TurnCCW(NORTH).String())
+	fmt.Println(TurnCCW(EAST).String())
+	fmt.Println(TurnCCW(SOUTH).String())
+	fmt.Println(TurnCCW(WEST).String())
 
 	// Output:
 	// W
@@ -29,10 +29,10 @@ func ExampleTurnCCW() {
 }
 
 func ExampleTurn180() {
-	fmt.Println(Turn180(North).String())
-	fmt.Println(Turn180(East).String())
-	fmt.Println(Turn180(South).String())
-	fmt.Println(Turn180(West).String())
+	fmt.Println(Turn180(NORTH).String())
+	fmt.Println(Turn180(EAST).String())
+	fmt.Println(Turn180(SOUTH).String())
+	fmt.Println(Turn180(WEST).String())
 
 	// Output:
 	// S

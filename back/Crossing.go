@@ -7,18 +7,18 @@ type Crossing struct {
 func NewCrossing() Crossing {
 	return Crossing{
 		lanes: map[Lane]struct{}{
-			{ North, East  }: struct{}{},
-			{ North, South }: struct{}{},
-			{ North, West  }: struct{}{},
-			{ East,  South }: struct{}{},
-			{ East,  West  }: struct{}{},
-			{ East,  North }: struct{}{},
-			{ South, West  }: struct{}{},
-			{ South, North }: struct{}{},
-			{ South, East  }: struct{}{},
-			{ West,  North }: struct{}{},
-			{ West,  East  }: struct{}{},
-			{ West,  South }: struct{}{},
+			{ NORTH, EAST  }: struct{}{},
+			{ NORTH, SOUTH }: struct{}{},
+			{ NORTH, WEST  }: struct{}{},
+			{ EAST,  SOUTH }: struct{}{},
+			{ EAST,  WEST  }: struct{}{},
+			{ EAST,  NORTH }: struct{}{},
+			{ SOUTH, WEST  }: struct{}{},
+			{ SOUTH, NORTH }: struct{}{},
+			{ SOUTH, EAST  }: struct{}{},
+			{ WEST,  NORTH }: struct{}{},
+			{ WEST,  EAST  }: struct{}{},
+			{ WEST,  SOUTH }: struct{}{},
 		},
 	}
 }

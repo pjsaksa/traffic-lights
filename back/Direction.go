@@ -3,50 +3,50 @@ package main
 type Direction uint8
 
 const (
-	Lost Direction = iota
+	LOST Direction = iota
 	//
-	North
-	East
-	South
-	West
+	NORTH
+	EAST
+	SOUTH
+	WEST
 )
 
 func (d Direction) String() string {
 	switch d {
-	case North: return "N"
-	case East:  return "E"
-	case South: return "S"
-	case West:  return "W"
+	case NORTH: return "N"
+	case EAST:  return "E"
+	case SOUTH: return "S"
+	case WEST:  return "W"
 	}
 	return "Lost"
 }
 
 func TurnCW(in Direction) Direction {
 	switch in {
-	case North: return East
-	case East:  return South
-	case South: return West
-	case West:  return North
+	case NORTH: return EAST
+	case EAST:  return SOUTH
+	case SOUTH: return WEST
+	case WEST:  return NORTH
 	}
-	return Lost
+	return LOST
 }
 
 func TurnCCW(in Direction) Direction {
 	switch in {
-	case North: return West
-	case East:  return North
-	case South: return East
-	case West:  return South
+	case NORTH: return WEST
+	case EAST:  return NORTH
+	case SOUTH: return EAST
+	case WEST:  return SOUTH
 	}
-	return Lost
+	return LOST
 }
 
 func Turn180(in Direction) Direction {
 	switch in {
-	case North: return South
-	case East:  return West
-	case South: return North
-	case West:  return East
+	case NORTH: return SOUTH
+	case EAST:  return WEST
+	case SOUTH: return NORTH
+	case WEST:  return EAST
 	}
-	return Lost
+	return LOST
 }
