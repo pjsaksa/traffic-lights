@@ -12,6 +12,7 @@ type Claim interface {
 
 	IsClaimed() bool
 	IsBlocked() bool
+	Lane() Lane
 
 	BeginClaim()
 	EndClaim()

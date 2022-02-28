@@ -1,8 +1,8 @@
 package main
 
 const (
-	claim_interval int32 =  5
-	pause_interval int32 = 10
+	claim_interval int32 = 5
+	pause_interval int32 = 3
 )
 
 type DaytimeClaim struct {
@@ -42,8 +42,10 @@ func (c *DaytimeClaim) Weight() int32 {
 
 func (c *DaytimeClaim) BeginClaim() {
 	c.isClaimed = true
+	c.ticks = 0
 }
 
 func (c *DaytimeClaim) EndClaim() {
 	c.isClaimed = false
+	c.ticks = 0
 }
