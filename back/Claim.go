@@ -1,7 +1,7 @@
 package main
 
 const (
-	NO_WEIGHT  = 0
+	NO_WEIGHT  =    0
 	MAX_WEIGHT = 1000
 )
 

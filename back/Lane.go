@@ -1,11 +1,19 @@
 package main
 
+import (
+	"strings"
+)
+
 type Lane struct {
 	from,to Direction
 }
 
 func (lane Lane) String() string {
 	return lane.from.String() + "->" + lane.to.String()
+}
+
+func (lane Lane) WebString() string {
+	return strings.ToLower( lane.from.String() + "-" + lane.to.String() )
 }
 
 func (lane Lane) IsStraight() bool {

@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	cr := NewCrossing()
+	crossing := NewCrossing()
 
 	/*
 	claim1 := cr.AccessClaim(Lane{ SOUTH, WEST })
@@ -19,7 +19,11 @@ func main() {
 	}
 	*/
 
-	<- cr.quit
+	httpSrv := NewHttpServer(&crossing)
+	fmt.Println("Listening now at address", httpSrv.Addr);
+	httpSrv.ListenAndServe()
+
+	<- crossing.quit
 
 	fmt.Printf("exiting\n")
 }

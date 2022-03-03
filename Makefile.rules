@@ -1,15 +1,15 @@
-BACK_FILES:=Claim.go ClaimBase.go Crossing.go DaytimeClaim.go Direction.go Lane.go main.go
-GOBUILD=go build -o $@ $^
+BACK_FILES:=Claim.go ClaimBase.go Command.go Crossing.go DaytimeClaim.go Direction.go Http.go Lane.go Report.go User.go main.go
+GOBUILD=go build -o $@
 
 #
 
 back : $(DST)/traffic-lights
 
 $(DST)/traffic-lights : $(foreach f,$(BACK_FILES),$(SRC)/back/$(f))
-	$(GOBUILD)
+	cd $(SRC)/back && $(GOBUILD)
 
 test :
-	go test $(SRC)/back/*.go
+	cd $(SRC)/back && go test
 
 #
 

@@ -2,8 +2,8 @@ package main
 
 type ClaimBase struct {
 	crossing  *Crossing
-	lane      Lane
-	isClaimed bool
+	lane       Lane
+	isClaimed  bool
 }
 
 func (cb *ClaimBase) IsBlocked() bool {

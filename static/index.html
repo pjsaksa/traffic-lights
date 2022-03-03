@@ -1,9 +1,317 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>index</title>
+<script type="text/javascript">
+var CANVAS = null;
+var CTX = null;
+var CTRL = null;
+
+var LOGIN;
+var MOBILES = {};
+
+// ------------------------------------------------------------
+
+class Ctrl {
+    open() {
+        this.openPending = false;
+
+        // WebSocket
+
+        const urlArr = window.location.href.match( new RegExp('^[a-z]+://([^/]+)/') );
+
+        if (!urlArr
+            || urlArr.length != 2
+            || urlArr[1].length < 1)
+        {
+            return;
+        }
+
+        const wsUrl = 'ws://' + urlArr[1] + '/ws';
+
+        this.WS = new WebSocket(wsUrl);
+
+        // WebSocket events
+
+        this.WS.addEventListener('message', this.receive);
+        this.WS.addEventListener('close', this.close);
+    }
+
+    close(event) {
+        this.WS = undefined;
+
+        if (!this.openPending) {
+            setTimeout('CTRL.open()', 500);
+            this.openPending = true;
+        }
+    }
+
+    constructor() {
+        this.openPending = false;
+        this.open();
+    }
+
+    send() {
+        if (!this.WS) {
+            return;
+        }
+
+        this.WS.send('{ "command": "message", "data": { "message": "yo yo" } }');
+    }
+
+    receive(event) {
+        try {
+            if (!readMessage(JSON.parse(event.data))) {
+                console.log('unknown message: ' + event.data);
+            }
+        }
+        catch (err) {
+            console.log('syntax error: ' + err.message + '\n' + event.data);
+        }
+    }
+};
+
+// ------------------------------------------------------------
+
+function readMessage(message)
+{
+    if (!message.report) {
+        return false;
+    }
+
+    if (message.report === "message")
+    {
+        console.log('Message: ' + message.data);
+        return true;
+    }
+    else if (message.report === "lane-status")
+    {
+        if (typeof message.data === "object"
+            && typeof message.data.length === "number")
+        {
+            for (let i = 0; i < message.data.length ; i++)
+            {
+                const m = message.data[i];
+
+                if (typeof m.lane === "string"
+                    && typeof m.status === "string")
+                {
+                    setLaneStatus(m.lane, m.status)
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+//
+
+function init() {
+    CTRL = new Ctrl();
+}
+
+function setLaneStatus(lane, status)
+{
+    var elems = document.getElementsByClassName(lane);
+    for (let i = 0; i < elems.length; i++) {
+        elems[i].dataset.light = status;
+    }
+}
+
+</script>
+<style type="text/css">
+  body {
+      margin: 0;
+  }
+  svg #inputs rect[data-light="green"] { fill: green; }
+  svg #lanes  path[data-light="green"] { stroke-width: 6; stroke: green; }
+  /* svg #inputs rect[data-light="red"] { fill: red; } */
+  svg #lanes  path[data-light="red"] { stroke: red; }
+</style>
 </head>
-<body>
-<h1>index</h1>
+
+<body onload="init();">
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     color-interpolation="auto"
+     color-rendering="auto"
+     fill-opacity="1"
+     fill="white"
+     font-family="'Consolas'"
+     font-size="24px"
+     font-style="normal"
+     font-weight="normal"
+     height="891"
+     image-rendering="auto"
+     shape-rendering="geometricPrecision"
+     stroke-dasharray="none"
+     stroke-dashoffset="0"
+     stroke-linecap="butt"
+     stroke-linejoin="miter"
+     stroke-miterlimit="1.45"
+     stroke-opacity="1"
+     stroke-width="1"
+     stroke="black"
+     text-rendering="geometricPrecision"
+     width="890"
+     >
+
+  <!-- background -->
+  <rect x="0" y="0" width="890" height="891" stroke="gray" fill="lightgray"/>
+
+  <g id="inputs" transform="translate(145,145)">
+    <!-- white square -->
+    <rect x="0" y="0" width="600" height="600"/>
+
+    <!-- N->W -->
+    <g transform="translate(0,-100)">
+      <rect class="n-w" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="0" y="-30" width="100" height="30"/>
+      <text x="23.6094" y="-9.1758" stroke="none" xml:space="preserve" fill="black">N-&gt;W</text>
+    </g>
+
+    <!-- N->S -->
+    <g transform="translate(100,-100)">
+      <rect class="n-s" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="0" y="-30" width="100" height="30"/>
+      <text x="23.6094" y="-9.1758" stroke="none" xml:space="preserve" fill="black">N-&gt;S</text>
+    </g>
+
+    <!-- N->E -->
+    <g transform="translate(200,-100)">
+      <rect class="n-e" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="0" y="-30" width="100" height="30"/>
+      <text x="23.6094" y="-9.1758" stroke="none" xml:space="preserve" fill="black">N-&gt;E</text>
+    </g>
+
+    <!-- S->W -->
+    <g transform="translate(300,600)">
+      <rect class="s-w" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="0"       y="100" width="100" height="30"/>
+      <text x="23.6094" y="120.8242" stroke="none" xml:space="preserve" fill="black">S-&gt;W</text>
+    </g>
+
+    <!-- S->N -->
+    <g transform="translate(400,600)">
+      <rect class="s-n" x="0" y="0"  width="100" height="100"/>
+      <!-- /label -->
+      <rect x="0"       y="100" width="100" height="30"/>
+      <text x="23.6094" y="120.8242" stroke="none" xml:space="preserve" fill="black">S-&gt;N</text>
+    </g>
+
+    <!-- S->E -->
+    <g transform="translate(500,600)">
+      <rect class="s-e" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="0"       y="100" width="100" height="30"/>
+      <text x="23.6094" y="120.8242" stroke="none" xml:space="preserve" fill="black">S-&gt;E</text>
+    </g>
+
+    <!-- W->N -->
+    <g transform="translate(-100,300)">
+      <rect class="w-n" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="-30" y="0" width="30" height="100"/>
+      <g transform="matrix(0,1,-1,0,-1,21.6094)">
+        <text x="2" xml:space="preserve" y="19.8242" stroke="none" fill="black">W-&gt;N</text>
+      </g>
+    </g>
+
+    <!-- W->E -->
+    <g transform="translate(-100,400)">
+      <rect class="w-e" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="-30" y="0" width="30" height="100"/>
+      <g transform="matrix(0,1,-1,0,-1,21.6094)">
+        <text x="2" xml:space="preserve" y="19.8242" stroke="none" fill="black">W-&gt;E</text>
+      </g>
+    </g>
+
+    <!-- W->S -->
+    <g transform="translate(-100,500)">
+      <rect class="w-s" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="-30" y="0" width="30" height="100"/>
+      <g transform="matrix(0,1,-1,0,-1,21.6094)">
+        <text x="2" xml:space="preserve" y="19.8242" stroke="none" fill="black">W-&gt;S</text>
+      </g>
+    </g>
+
+    <!-- E->N -->
+    <g transform="translate(600,0)">
+      <rect class="e-n" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="100" y="0" width="30" height="100"/>
+      <g transform="matrix(-0,-1,1,-0,101,78.3906)">
+        <text x="2" xml:space="preserve" y="19.8242" stroke="none" fill="black">E-&gt;N</text>
+      </g>
+    </g>
+
+    <!-- E->W -->
+    <g transform="translate(600,100)">
+      <rect class="e-w" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="100" y="0" width="30" height="100"/>
+      <g transform="matrix(-0,-1,1,-0,101,78.3906)">
+        <text x="2" xml:space="preserve" y="19.8242" stroke="none" fill="black">E-&gt;W</text>
+      </g>
+    </g>
+
+    <!-- E->S -->
+    <g transform="translate(600,200)">
+      <rect class="e-s" x="0" y="0" width="100" height="100"/>
+      <!-- /label -->
+      <rect x="100" y="0" width="30" height="100"/>
+      <g transform="matrix(-0,-1,1,-0,101,78.3906)">
+        <text x="2" xml:space="preserve" y="19.8242" stroke="none" fill="black">E-&gt;S</text>
+      </g>
+    </g>
+
+
+    <!-- N exit -->
+    <rect x="400"  y="-100" width="100" height="100"/>
+
+    <!-- E exit -->
+    <rect x="600"  y="400"  width="100" height="100"/>
+
+    <!-- S exit -->
+    <rect x="100"  y="600"  width="100" height="100"/>
+
+    <!-- W exit -->
+    <rect x="-100" y="100"  width="100" height="100"/>
+  </g>
+
+  <!-- Lanes -->
+  <g id="lanes"
+     transform="translate(145,145)"
+     stroke="#909090" stroke-width="2" stroke-dasharray="12,8"
+     fill="none"
+     >
+    <path class="e-n" d="M600 50 L510 50 L501 48 L493 43 L450 0"/>
+    <path class="e-s" d="M600 250 L285 274 L280 275 L277 277 L274 280 L271 284 L150 600"/>
+    <path class="e-w" d="M600 150 L0 150"/>
+    <path class="n-e" d="M250 0 L274 315 L275 320 L277 323 L280 326 L284 329 L600 450"/>
+    <path class="n-s" d="M150 0 L150 600"/>
+    <path class="n-w" d="M50 0 L50 90 L48 100 L43 107 L0 150"/>
+    <path class="s-e" d="M550 600 L550 510 L552 501 L557 493 L600 450"/>
+    <path class="s-n" d="M450 600 L450 0"/>
+    <path class="s-w" d="M350 600 L326 285 L325 280 L323 277 L320 274 L316 271 L0 150"/>
+    <path class="w-e" d="M0 450 L600 450"/>
+    <path class="w-n" d="M0 350 L315 326 L320 325 L323 323 L326 320 L329 316 L450 0"/>
+    <path class="w-s" d="M0 550 L90 550 L100 552 L107 557 L150 600"/>
+  </g>
+
+</svg>
+
 </body>
 </html>

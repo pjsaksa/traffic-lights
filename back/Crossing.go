@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"sort"
 	"time"
 )
@@ -12,6 +12,8 @@ type Crossing struct {
 	lanes     map[Lane]struct{}
 	claims    map[Lane]Claim
 	rounds    int
+
+	users     map[*User]struct{}
 }
 
 func NewCrossing() Crossing {
@@ -33,6 +35,7 @@ func NewCrossing() Crossing {
 			{ WEST,  SOUTH }: struct{}{},
 		},
 		claims: map[Lane]Claim{},
+		users: map[*User]struct{}{},
 	}
 
 	go cr.Run()
@@ -81,6 +84,15 @@ func (cr *Crossing) Blocks(x,y Lane) bool {
 	return _blocks2(cr, x, y) || _blocks2(cr, y, x)
 }
 
+func (cr *Crossing) Lane(name string) *Lane {
+	for lane := range cr.lanes {
+		if lane.String() == name {
+			return &lane
+		}
+	}
+	return nil
+}
+
 func (cr *Crossing) Run() {
 	defer func() { cr.quit <- true }()
 
@@ -116,8 +128,6 @@ func sortClaims(claims []Claim) {
 }
 
 func (cr *Crossing) Tick() {
-	fmt.Printf("tick\n")
-
 	var claims []Claim
 
 	for lane := range cr.lanes {
@@ -145,7 +155,20 @@ func (cr *Crossing) Tick() {
 		}
 	}
 
+	// report
+
+	if len(cr.users) > 0 {
+		report := NewClaimsReport(cr)
+
+		for user := range cr.users {
+			user.output <- report
+		}
+	}
+
 	// print claims (for debug)
+	//@@@
+	/*
+	fmt.Printf("tick\n")
 
 	for _,cl := range claims {
 		fmt.Printf("- %s : %s (%4d)\n",
@@ -153,8 +176,9 @@ func (cr *Crossing) Tick() {
 			func(b bool) string {
 				if b { return "*" } else { return "." }
 			}(cl.IsClaimed()),
-			cl.Weight()) //@@@
+			cl.Weight())
 	}
+	*/
 }
 
 func (cr *Crossing) Valid(lane Lane) {
