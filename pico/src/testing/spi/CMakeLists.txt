@@ -1,0 +1,13 @@
+add_executable(spi_test-master spi_test-master.c)
+target_link_libraries(spi_test-master pico_stdlib hardware_spi)
+pico_add_uf2_output(spi_test-master)
+pico_add_hex_output(spi_test-master)
+pico_enable_stdio_usb(spi_test-master 1)
+pico_enable_stdio_uart(spi_test-master 0)
+
+add_executable(spi_test-slave spi_test-slave.c)
+target_link_libraries(spi_test-slave pico_stdlib hardware_spi)
+pico_add_uf2_output(spi_test-slave)
+pico_add_hex_output(spi_test-slave)
+pico_enable_stdio_usb(spi_test-slave 1)
+pico_enable_stdio_uart(spi_test-slave 0)

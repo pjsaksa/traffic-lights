@@ -10,11 +10,8 @@ set(CMAKE_CXX_STANDARD 17)
 # Initialize the SDK
 pico_sdk_init()
 
-
 add_executable(traffic_lights main.c)
-
-# pull in common dependencies
 target_link_libraries(traffic_lights pico_stdlib)
+pico_add_uf2_output(traffic_lights)
 
-## create map/bin/hex file etc.
-pico_add_extra_outputs(traffic_lights)
+add_subdirectory(testing/spi)
