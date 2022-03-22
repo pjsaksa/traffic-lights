@@ -17,7 +17,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	//"strings"
 	"time"
 
 	"nhooyr.io/websocket"
@@ -106,12 +105,18 @@ func (gs *HttpHandler) ServeHTTP(out http.ResponseWriter, req *http.Request) {
 
 // ----- HttpServer
 
-func NewHttpServer(crossing *Crossing) *http.Server {
-	return &http.Server{
+func StartHttpServer(crossing *Crossing) {
+	httpSrv := &http.Server{
 		Addr:           ":8000",
 		Handler:        NewHttpHandler(crossing),
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 15,
+	}
+
+	fmt.Println("Listening at address", httpSrv.Addr);
+
+	if err := httpSrv.ListenAndServe() ; err != http.ErrServerClosed {
+		panic(err.Error())
 	}
 }
