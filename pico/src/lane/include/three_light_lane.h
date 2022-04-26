@@ -13,6 +13,8 @@ typedef struct {
     uint green_light;
 
     repeating_timer_t out_of_order_blink_timer;
+    alarm_id_t state_transition_alarm;
+
 } three_light_lane_t;
 
 lane_t* three_light_lane_init(three_light_lane_t* three_light_lane,

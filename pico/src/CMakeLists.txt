@@ -12,7 +12,10 @@ option(ENABLE_TESTS "Compile test targets" OFF)
 # Initialize the SDK
 pico_sdk_init()
 
+add_subdirectory(data_comm)
+add_subdirectory(data_decoder)
 add_subdirectory(lane)
+add_subdirectory(messages)
 add_subdirectory(traffic_light_group)
 
 add_executable(traffic_lights main.c)
@@ -20,7 +23,9 @@ target_link_libraries(traffic_lights
     pico_stdlib
     hardware_spi
     traffic_light_group
-    lane)
+    lane
+    data_decoder
+    data_comm)
 pico_add_uf2_output(traffic_lights)
 pico_add_hex_output(traffic_lights)
 pico_enable_stdio_usb(traffic_lights 1)

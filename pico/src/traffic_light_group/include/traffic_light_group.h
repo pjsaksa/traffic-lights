@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lane.h"
+#include "../../messages/messages.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -25,4 +26,5 @@ typedef struct
 void traffic_light_group_init(traffic_light_group_t* logic,
                               const traffic_light_group_config_t* config);
 
-void traffic_light_group_execute(traffic_light_group_t* logic);
+void traffic_light_group_execute(traffic_light_group_t* group,
+                                 message_t message);
