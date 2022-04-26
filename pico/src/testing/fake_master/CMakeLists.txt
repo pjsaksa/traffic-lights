@@ -1,0 +1,6 @@
+add_executable(fake_master fake_master.c)
+target_link_libraries(fake_master pico_stdlib hardware_spi)
+pico_add_uf2_output(fake_master)
+pico_add_hex_output(fake_master)
+pico_enable_stdio_usb(fake_master 1)
+pico_enable_stdio_uart(fake_master 0)

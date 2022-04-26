@@ -7,7 +7,7 @@ project(pico-traffic_lights C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
-option(ENABLE_TESTS "Compile test targets" OFF)
+option(ENABLE_TEST_BUILDS "Compile test targets" OFF)
 
 # Initialize the SDK
 pico_sdk_init()
@@ -31,6 +31,7 @@ pico_add_hex_output(traffic_lights)
 pico_enable_stdio_usb(traffic_lights 1)
 pico_enable_stdio_uart(traffic_lights 0)
 
-if (ENABLE_TESTS)
+if (ENABLE_TEST_BUILDS)
+add_subdirectory(testing/fake_master)
 add_subdirectory(testing/spi)
 endif()
