@@ -26,8 +26,6 @@ const (
 	MaxContentLength = 16*1024
 )
 
-// ----- URL parsing
-
 /*
 func parseImgUrl(input string) string {
 	if strings.HasPrefix(input, "/img/") {
@@ -38,38 +36,36 @@ func parseImgUrl(input string) string {
 }
 */
 
-// ----- GameServer
-
 type HttpHandler struct {
 	crossing *Crossing
 	serveMux  http.ServeMux
 }
 
 func NewHttpHandler(crossing *Crossing) *HttpHandler {
-	hh := &HttpHandler{
+	handler := &HttpHandler{
 		crossing: crossing,
 	}
 
-	hh.serveMux.HandleFunc(
+	handler.serveMux.HandleFunc(
 		"/",
 		func (out http.ResponseWriter, req *http.Request) {
-			hh.HandleRequest(out, req)
+			handler.HandleRequest(out, req)
 		})
 
-	return hh
+	return handler
 }
 
-func (hh *HttpHandler) newWebSocket(out http.ResponseWriter, req *http.Request) {
-	ws, err := websocket.Accept(out, req, nil)
+func (handler *HttpHandler) newWebSocket(out http.ResponseWriter, req *http.Request) {
+	webSocket,err := websocket.Accept(out, req, nil)
 	if err != nil {
 		fmt.Printf("websocket.Accept: %v\n", err)
 		return
 	}
-	defer ws.Close(websocket.StatusInternalError, "internal error")
+	defer webSocket.Close(websocket.StatusInternalError, "internal error")
 
 	//
 
-	err = RunSocket(hh.crossing, req.Context(), ws)
+	err = RunSocket(handler.crossing, req.Context(), webSocket)
 	if err == nil ||
 		errors.Is(err, context.Canceled) {
 		return
@@ -82,7 +78,7 @@ func (hh *HttpHandler) newWebSocket(out http.ResponseWriter, req *http.Request) 
 	fmt.Printf("%v", err)
 }
 
-func (gs *HttpHandler) HandleRequest(out http.ResponseWriter, req *http.Request) {
+func (handler *HttpHandler) HandleRequest(out http.ResponseWriter, req *http.Request) {
 	if req.URL.EscapedPath() == "/" {
 		http.ServeFile(out, req, "front/index.html")
 /*
@@ -93,30 +89,30 @@ func (gs *HttpHandler) HandleRequest(out http.ResponseWriter, req *http.Request)
 		http.ServeFile(out, req, newUrl)
 */
 	} else if req.URL.EscapedPath() == "/ws" {
-		gs.newWebSocket(out, req)
+		handler.newWebSocket(out, req)
 	} else {
 		http.NotFound(out, req)
 	}
 }
 
-func (gs *HttpHandler) ServeHTTP(out http.ResponseWriter, req *http.Request) {
-	gs.serveMux.ServeHTTP(out, req)
+func (handler *HttpHandler) ServeHTTP(out http.ResponseWriter, req *http.Request) {
+	handler.serveMux.ServeHTTP(out, req)
 }
 
 // ----- HttpServer
 
-func StartHttpServer(crossing *Crossing) {
-	httpSrv := &http.Server{
+func StartHttpServer(cr *Crossing) {
+	httpServer := &http.Server{
 		Addr:           ":8000",
-		Handler:        NewHttpHandler(crossing),
+		Handler:        NewHttpHandler(cr),
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 15,
 	}
 
-	fmt.Println("Listening at address", httpSrv.Addr);
+	fmt.Println("Listening at address", httpServer.Addr);
 
-	if err := httpSrv.ListenAndServe() ; err != http.ErrServerClosed {
+	if err := httpServer.ListenAndServe() ; err != http.ErrServerClosed {
 		panic(err.Error())
 	}
 }

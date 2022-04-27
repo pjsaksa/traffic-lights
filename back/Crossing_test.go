@@ -5,33 +5,32 @@ import (
 	"sort"
 )
 
-func reportLanePairBlock(cr Crossing, x,y Lane) (string, bool) {
-	if x == y {
+func reportLanePairBlock(cr Crossing, lane1,lane2 Lane) (string, bool) {
+	if lane1 == lane2 {
 		return "", false
 	}
 
-	if cr.Blocks(x, y) {
-		return fmt.Sprintf("(%s x %s): Block", x.String(), y.String()), true
+	if cr.Blocks(lane1, lane2) {
+		return fmt.Sprintf("(%s x %s): Block", lane1.String(), lane2.String()), true
 	} else {
-		return fmt.Sprintf("(%s x %s): Pass", x.String(), y.String()), true
+		return fmt.Sprintf("(%s x %s): Pass", lane1.String(), lane2.String()), true
 	}
 }
 
-func reportLaneSourceBlock(cr Crossing, src Lane) {
+func reportLaneSourceBlock(cr Crossing, lane1 Lane) {
 
-	var lines []string
+	var outputList []string
 
-	for i := range cr.lanes {
-		line, ok := reportLanePairBlock(cr, src, i)
-		if ok {
-			lines = append(lines, line)
+	for lane2 := range cr.lanes {
+		if output, ok := reportLanePairBlock(cr, lane1, lane2) ; ok {
+			outputList = append(outputList, output)
 		}
 	}
 
-	sort.Strings(lines)
+	sort.Strings(outputList)
 
-	for i := range lines {
-		fmt.Println(lines[i])
+	for idx := range outputList {
+		fmt.Println(outputList[idx])
 	}
 }
 

@@ -12,40 +12,40 @@ type DaytimeClaim struct {
 	cars  int32
 }
 
-func (c *DaytimeClaim) IncTick() {
-	c.ticks++
+func (claim *DaytimeClaim) IncTick() {
+	claim.ticks++
 
-	if c.isClaimed {
-		c.cars = 0
+	if claim.isClaimed {
+		claim.cars = 0
 	}
 }
 
-func (c *DaytimeClaim) IncCar() {
-	c.cars++
+func (claim *DaytimeClaim) IncCar() {
+	claim.cars++
 }
 
-func (c *DaytimeClaim) Weight() int32 {
-	if c.isClaimed {
-		if c.ticks < claim_interval || c.cars > 0 {
+func (claim *DaytimeClaim) Weight() int32 {
+	if claim.isClaimed {
+		if claim.ticks < claim_interval || claim.cars > 0 {
 			return MAX_WEIGHT
 		} else {
 			return NO_WEIGHT
 		}
 	} else {
-		if c.ticks < pause_interval {
+		if claim.ticks < pause_interval {
 			return NO_WEIGHT
 		} else {
-			return (c.ticks - pause_interval) + (2 * c.cars)
+			return (claim.ticks - pause_interval) + (2 * claim.cars)
 		}
 	}
 }
 
-func (c *DaytimeClaim) BeginClaim() {
-	c.isClaimed = true
-	c.ticks = 0
+func (claim *DaytimeClaim) BeginClaim() {
+	claim.isClaimed = true
+	claim.ticks = 0
 }
 
-func (c *DaytimeClaim) EndClaim() {
-	c.isClaimed = false
-	c.ticks = 0
+func (claim *DaytimeClaim) EndClaim() {
+	claim.isClaimed = false
+	claim.ticks = 0
 }

@@ -16,8 +16,8 @@ type Browser struct {
 func NewBrowser(crossing *Crossing) Browser {
 	return Browser{
 		crossing: crossing,
-		input: make(chan Command, 10),
-		output: make(chan Report, 10),
+		input:    make(chan Command, 10),
+		output:   make(chan Report, 10),
 	}
 }
 
@@ -44,8 +44,8 @@ func RunSocket(crossing *Crossing, ctx context.Context, conn *websocket.Conn) er
 			} else {
 				return nil
 			}
-		case rep := <- browser.output:
-			if err := conn.Write(ctx, websocket.MessageText, []byte(rep.toJson())) ; err != nil {
+		case report := <- browser.output:
+			if err := conn.Write(ctx, websocket.MessageText, []byte(report.toJson())) ; err != nil {
 				return err
 			}
 		case <- ctx.Done():
@@ -60,9 +60,9 @@ func (browser *Browser) ParseSocket(ctx context.Context, conn *websocket.Conn) {
 	}()
 
 	for {
-		typ,buf,err := conn.Read(ctx)
-		if err == nil && typ == websocket.MessageText {
-			if cmd := ParseCommand(buf) ; cmd != nil {
+		dataType,data,err := conn.Read(ctx)
+		if err == nil && dataType == websocket.MessageText {
+			if cmd := ParseCommand(data) ; cmd != nil {
 				browser.input <- cmd
 			}
 		} else {

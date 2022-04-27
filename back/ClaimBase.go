@@ -6,13 +6,13 @@ type ClaimBase struct {
 	isClaimed  bool
 }
 
-func (cb *ClaimBase) IsBlocked() bool {
-	for l2,c2 := range cb.crossing.claims {
-		if cb.lane == l2 {
+func (claim1 *ClaimBase) IsBlocked() bool {
+	for lane2,claim2 := range claim1.crossing.claims {
+		if claim1.lane == lane2 {
 			continue
 		}
 
-		if c2.IsClaimed() && cb.crossing.Blocks(cb.lane, l2) {
+		if claim2.IsClaimed() && claim1.crossing.Blocks(claim1.lane, lane2) {
 			return true
 		}
 	}
@@ -20,10 +20,10 @@ func (cb *ClaimBase) IsBlocked() bool {
 	return false
 }
 
-func (cb *ClaimBase) IsClaimed() bool {
-	return cb.isClaimed
+func (claim1 *ClaimBase) IsClaimed() bool {
+	return claim1.isClaimed
 }
 
-func (cb *ClaimBase) Lane() Lane {
-	return cb.lane
+func (claim1 *ClaimBase) Lane() Lane {
+	return claim1.lane
 }

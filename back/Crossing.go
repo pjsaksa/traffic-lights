@@ -45,43 +45,43 @@ func NewCrossing() Crossing {
 
 // methods
 
-func (cr *Crossing) AccessClaim(l Lane) Claim {
-	if c,ok := cr.claims[l] ; ok {
-		return c
+func (cr *Crossing) AccessClaim(lane Lane) Claim {
+	if existingClaim,ok := cr.claims[lane] ; ok {
+		return existingClaim
 	} else {
-		var c2 Claim
+		var newClaim Claim
 
 		switch cr.claimType {
 		case "daytime":
-			c2 = &DaytimeClaim{
+			newClaim = &DaytimeClaim{
 				ClaimBase: ClaimBase{
 					crossing: cr,
-					lane: l,
+					lane: lane,
 				},
 			}
 		default:
 			panic("invalid claim type: " + cr.claimType)
 		}
 
-		cr.claims[l] = c2
+		cr.claims[lane] = newClaim
 
-		return c2
+		return newClaim
 	}
 }
 
-func (cr *Crossing) Blocks(x,y Lane) bool {
-	cr.Valid(x)
-	cr.Valid(y)
+func (cr *Crossing) Blocks(lane1,lane2 Lane) bool {
+	cr.Valid(lane1)
+	cr.Valid(lane2)
 
-	if x.to == y.to {
+	if lane1.to == lane2.to {
 		return true
 	}
 
-	if x.from == y.from {
+	if lane1.from == lane2.from {
 		return false
 	}
 
-	return _blocks2(cr, x, y) || _blocks2(cr, y, x)
+	return _blocks2(cr, lane1, lane2) || _blocks2(cr, lane2, lane1)
 }
 
 func (cr *Crossing) Lane(name string) *Lane {
@@ -190,14 +190,14 @@ func (cr *Crossing) Valid(lane Lane) {
 
 // private
 
-func _blocks2(cr *Crossing, x,y Lane) bool {
-	if x.IsLeft() {
-		return !y.IsRight()
+func _blocks2(cr *Crossing, lane1,lane2 Lane) bool {
+	if lane1.IsLeft() {
+		return !lane2.IsRight()
 	}
 
-	if x.IsStraight() {
-		return TurnCCW(x.from) == y.from ||
-			TurnCCW(x.from) == y.to
+	if lane1.IsStraight() {
+		return TurnCCW(lane1.from) == lane2.from ||
+			TurnCCW(lane1.from) == lane2.to
 	}
 
 	return false
