@@ -14,8 +14,8 @@ test :
 #
 
 front :
-	rm --recursive --force $(DST)/static
-	cp --archive $(SRC)/static $(DST)/static
+	rm --recursive --force $(DST)/front
+	cp --archive $(SRC)/front $(DST)/front
 
 #
 

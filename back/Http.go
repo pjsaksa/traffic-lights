@@ -3,13 +3,13 @@ package main
 /*
    Served entry points:
 
-   - `/` : `/static/index.html`
+   - `/` : `/front/index.html`
    - `/ws` : WebSocket
 
    Entry points implemented but commented out:
 
-   - "/css" : "/static/css"
-   - "/img/*" : "/static/img/*"
+   - "/css" : "/front/css"
+   - "/img/*" : "/front/img/*"
 */
 
 import (
@@ -31,7 +31,7 @@ const (
 /*
 func parseImgUrl(input string) string {
 	if strings.HasPrefix(input, "/img/") {
-		return "static" + input
+		return "front" + input
 	} else {
 		return ""
 	}
@@ -84,10 +84,10 @@ func (hh *HttpHandler) newWebSocket(out http.ResponseWriter, req *http.Request) 
 
 func (gs *HttpHandler) HandleRequest(out http.ResponseWriter, req *http.Request) {
 	if req.URL.EscapedPath() == "/" {
-		http.ServeFile(out, req, "static/index.html")
+		http.ServeFile(out, req, "front/index.html")
 /*
 	} else if req.URL.EscapedPath() == "/css" {
-		http.ServeFile(out, req, "static/css")
+		http.ServeFile(out, req, "front/css")
 	} else if newUrl := parseImgUrl(req.URL.EscapedPath())
 	newUrl != "" {
 		http.ServeFile(out, req, newUrl)
