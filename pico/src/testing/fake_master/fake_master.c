@@ -19,15 +19,14 @@ static uint test_phase = 0;
 
 static void send_spi_data(uint32_t data)
 {
-    uint32_t tx_data;
+    uint32_t rx_data;
 
-    if (spi_is_writable(SPI))
-    {
-        spi_write_read_blocking(SPI,
+    spi_write_read_blocking(SPI,
                                 (const uint8_t*) &data,
-                                (uint8_t*) &tx_data,
+                                (uint8_t*) &rx_data,
                                 sizeof(data));
-    }
+
+    printf("Tx: 0x%lx, Rx: 0x%lx\n", data, rx_data);
 }
 
 uint32_t make_state_req_command(bool left_stop,
@@ -50,12 +49,13 @@ bool run_test_light_sequence(struct repeating_timer* timer)
     switch (test_phase)
     {
     case 0:
-        send_spi_data(make_state_req_command(false, true, true));
+        send_spi_data(make_state_req_command(true, true, true));
         ++test_phase;
         break;
     case 1:
-        send_spi_data(make_state_req_command(false, true, false));
-        ++test_phase;
+        send_spi_data(make_state_req_command(false, false, false));
+//        ++test_phase;
+        test_phase = 0;
         break;
     case 2:
         send_spi_data(make_state_req_command(false, false, false));
@@ -101,7 +101,7 @@ int main(void)
     spi_set_format(SPI, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
     repeating_timer_t test_timer;
-    add_repeating_timer_ms(5000, &run_test_light_sequence, 0, &test_timer);
+    add_repeating_timer_ms(7000, &run_test_light_sequence, 0, &test_timer);
 
     repeating_timer_t led_timer;
     add_repeating_timer_ms(500, &blink_led, 0, &led_timer);

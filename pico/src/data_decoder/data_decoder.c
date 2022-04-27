@@ -87,6 +87,5 @@ message_t data_decoder_handle_message(uint32_t raw_message)
         break;
     }
 
-    printf("Unknown message: %d\n", message_id);
     return decode_unknown_message();
 }

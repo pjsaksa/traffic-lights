@@ -56,25 +56,25 @@ void traffic_light_group_init(traffic_light_group_t* group,
 void traffic_light_group_execute(traffic_light_group_t* group,
                                  message_t message)
 {
+    if (message.id == MESSAGE_ID_REQUEST_STATE)
+    {
+        bool success = request_lane_state(group->left_lane,
+                                          message.request_state.left_lane.requested_state);
+
+        success = request_lane_state(group->center_lane,
+                                     message.request_state.center_lane.requested_state) && success;
+
+        success = request_lane_state(group->right_lane,
+                                     message.request_state.right_lane.requested_state) && success;
+
+        if (success)
+        {
+            group->previousCommand_ms = get_ms();
+        }
+    }
+
     if (!group->out_of_order)
     {
-        if (message.id == MESSAGE_ID_REQUEST_STATE)
-        {
-            bool success = request_lane_state(group->left_lane,
-                               message.request_state.left_lane.requested_state);
-
-            success = request_lane_state(group->center_lane,
-                               message.request_state.center_lane.requested_state) && success;
-
-            success = request_lane_state(group->right_lane,
-                               message.request_state.right_lane.requested_state) && success;
-
-            if (success)
-            {
-                group->previousCommand_ms = get_ms();
-            }
-        }
-
         if (get_ms() - group->previousCommand_ms > OUT_OF_ORDER_TIMEOUT_MS)
         {
             group->out_of_order = true;

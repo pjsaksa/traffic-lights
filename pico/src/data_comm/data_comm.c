@@ -37,6 +37,8 @@ uint32_t data_comm_exchange_raw_data(data_comm_t* data_comm, uint32_t tx_data)
                                 (const uint8_t*)&tx_data,
                                 (uint8_t*)&raw_data,
                                 sizeof(raw_data));
+
+        printf("Rx: 0x%lx, Tx: 0x%lx\n", raw_data, tx_data);
     }
 
     return raw_data;
