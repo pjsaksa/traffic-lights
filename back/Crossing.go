@@ -13,7 +13,7 @@ type Crossing struct {
 	claims    map[Lane]Claim
 	rounds    int
 
-	users     map[*User]struct{}
+	browsers  map[*Browser]struct{}
 }
 
 func NewCrossing() Crossing {
@@ -35,7 +35,7 @@ func NewCrossing() Crossing {
 			{ WEST,  SOUTH }: struct{}{},
 		},
 		claims: map[Lane]Claim{},
-		users: map[*User]struct{}{},
+		browsers: map[*Browser]struct{}{},
 	}
 
 	go cr.Run()
@@ -157,11 +157,11 @@ func (cr *Crossing) Tick() {
 
 	// report
 
-	if len(cr.users) > 0 {
+	if len(cr.browsers) > 0 {
 		report := NewClaimsReport(cr)
 
-		for user := range cr.users {
-			user.output <- report
+		for browser := range cr.browsers {
+			browser.output <- report
 		}
 	}
 

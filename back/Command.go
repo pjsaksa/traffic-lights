@@ -8,7 +8,7 @@ import (
 // ----- Command
 
 type Command interface {
-	handle(user *User)
+	handle(browser *Browser)
 }
 
 func ParseCommand(byteData []byte) (output Command) {
@@ -62,7 +62,7 @@ type MessageCommand struct {
 	message string
 }
 
-func (cmd MessageCommand) handle(user *User) {
+func (cmd MessageCommand) handle(browser *Browser) {
 	fmt.Printf("Message: %s\n", cmd.message)
 }
 
@@ -72,10 +72,10 @@ type IncCarCommand struct {
 	lane string
 }
 
-func (cmd IncCarCommand) handle(user *User) {
-	if lane := user.crossing.Lane(cmd.lane)
+func (cmd IncCarCommand) handle(browser *Browser) {
+	if lane := browser.crossing.Lane(cmd.lane)
 	lane != nil {
-		cl := user.crossing.AccessClaim(*lane)
+		cl := browser.crossing.AccessClaim(*lane)
 		cl.IncCar()
 	} else {
 		fmt.Printf("invalid lane in command: %s\n", cmd.lane)
