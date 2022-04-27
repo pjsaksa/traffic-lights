@@ -7,14 +7,14 @@ import (
 	"nhooyr.io/websocket"
 )
 
-type User struct {
+type Browser struct {
 	crossing *Crossing
 	input     chan Command
 	output    chan Report
 }
 
-func NewUser(crossing *Crossing) User {
-	return User{
+func NewBrowser(crossing *Crossing) Browser {
+	return Browser{
 		crossing: crossing,
 		input: make(chan Command, 10),
 		output: make(chan Report, 10),
@@ -22,29 +22,29 @@ func NewUser(crossing *Crossing) User {
 }
 
 func RunSocket(crossing *Crossing, ctx context.Context, conn *websocket.Conn) error {
-	user := NewUser(crossing)
+	browser := NewBrowser(crossing)
 
 	fmt.Println("new browser connection")
 
-	crossing.users[&user] = struct{}{}
+	crossing.browsers[&browser] = struct{}{}
 	defer func() {
-		delete(crossing.users, &user)
+		delete(crossing.browsers, &browser)
 		fmt.Println("browser disconnected")
 	}()
 
-	go user.ParseSocket(ctx, conn)
+	go browser.ParseSocket(ctx, conn)
 
-	user.output <- NewMessageReport("connected to backend")
+	browser.output <- NewMessageReport("connected to backend")
 
 	for {
 		select {
-		case cmd := <- user.input:
+		case cmd := <- browser.input:
 			if cmd != nil {
-				cmd.handle(&user)
+				cmd.handle(&browser)
 			} else {
 				return nil
 			}
-		case rep := <- user.output:
+		case rep := <- browser.output:
 			if err := conn.Write(ctx, websocket.MessageText, []byte(rep.toJson())) ; err != nil {
 				return err
 			}
@@ -54,16 +54,16 @@ func RunSocket(crossing *Crossing, ctx context.Context, conn *websocket.Conn) er
 	}
 }
 
-func (user *User) ParseSocket(ctx context.Context, conn *websocket.Conn) {
+func (browser *Browser) ParseSocket(ctx context.Context, conn *websocket.Conn) {
 	defer func() {
-		user.input <- nil
+		browser.input <- nil
 	}()
 
 	for {
 		typ,buf,err := conn.Read(ctx)
 		if err == nil && typ == websocket.MessageText {
 			if cmd := ParseCommand(buf) ; cmd != nil {
-				user.input <- cmd
+				browser.input <- cmd
 			}
 		} else {
 			break
