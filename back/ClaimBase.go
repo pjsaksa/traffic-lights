@@ -3,6 +3,7 @@ package main
 type ClaimBase struct {
 	crossing  *Crossing
 	lane       Lane
+	pole      *Pole
 	isClaimed  bool
 }
 

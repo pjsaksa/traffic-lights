@@ -1,16 +1,18 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	"sort"
 	"time"
 )
 
 type Crossing struct {
 	quit      chan bool
+	round     int
+
 	claimType string
 	claims    map[Lane]Claim
-	rounds    int
+	poles     map[Direction]*Pole
 
 	browsers  map[*Browser]struct{}
 }
@@ -20,6 +22,12 @@ func NewCrossing() Crossing {
 		quit:      make(chan bool, 1),
 		claimType: "daytime",
 		claims:    map[Lane]Claim{},
+		poles:     map[Direction]*Pole{
+			NORTH: NewPole(NORTH),
+			EAST:  NewPole(EAST),
+			SOUTH: NewPole(SOUTH),
+			WEST:  NewPole(WEST),
+		},
 		browsers:  map[*Browser]struct{}{},
 	}
 
@@ -102,6 +110,12 @@ func sortClaims(claims []Claim) {
 }
 
 func (cr *Crossing) Tick() {
+	cr.round++
+
+	fmt.Printf("----- Tick %d -----\n", cr.round)
+
+	//
+
 	var claims []Claim
 
 	for _,cl := range cr.claims {
@@ -128,7 +142,13 @@ func (cr *Crossing) Tick() {
 		}
 	}
 
-	// report
+	// report to poles
+
+	for poleDir,pole := range cr.poles {
+		pole.Transfer(poleDir)
+	}
+
+	// report to browsers
 
 	if len(cr.browsers) > 0 {
 		report := NewClaimsReport(cr)
@@ -177,6 +197,11 @@ func _blocks2(cr *Crossing, lane1,lane2 Lane) bool {
 }
 
 func (cr *Crossing) _initLane(lane Lane) {
+	pole,ok := cr.poles[lane.from]
+	if !ok {
+		panic("no pole found for lane.from")
+	}
+
 	var newClaim Claim
 
 	switch cr.claimType {
@@ -185,6 +210,7 @@ func (cr *Crossing) _initLane(lane Lane) {
 			ClaimBase: ClaimBase{
 				crossing: cr,
 				lane: lane,
+				pole: pole,
 			},
 		}
 	default:
@@ -192,4 +218,5 @@ func (cr *Crossing) _initLane(lane Lane) {
 	}
 
 	cr.claims[lane] = newClaim
+	pole.claims[lane] = newClaim
 }
