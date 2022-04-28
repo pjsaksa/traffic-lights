@@ -1,22 +1,26 @@
 BACK_FILES:=Browser.go Claim.go ClaimBase.go Command.go Crossing.go DaytimeClaim.go Direction.go Http.go Lane.go Report.go main.go
-GOBUILD=go build -o $@
+GOBUILD=go build -o "$@"
 
 #
 
+.PHONY: back
 back : $(DST)/traffic-lights
 
 $(DST)/traffic-lights : $(foreach f,$(BACK_FILES),$(SRC)/back/$(f))
-	cd $(SRC)/back && $(GOBUILD)
+	cd "$(SRC)/back" && $(GOBUILD)
 
+.PHONY: test
 test :
-	cd $(SRC)/back && go test
+	cd "$(SRC)/back" && go test
 
 #
 
+.PHONY: front
 front :
-	rm --recursive --force $(DST)/front
-	cp --archive $(SRC)/front $(DST)/front
+	rm --recursive --force "$(DST)/front"
+	cp --archive "$(SRC)/front" "$(DST)/front"
 
 #
 
+.PHONY: all
 all : back front
