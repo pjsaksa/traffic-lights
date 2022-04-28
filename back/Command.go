@@ -73,11 +73,12 @@ type IncCarCommand struct {
 }
 
 func (cmd IncCarCommand) handle(browser *Browser) {
-	if lane := browser.crossing.Lane(cmd.lane)
-	lane != nil {
-		claim := browser.crossing.AccessClaim(*lane)
-		claim.IncCar()
-	} else {
-		fmt.Printf("invalid lane in command: %s\n", cmd.lane)
+	if lane,ok := browser.crossing.Lane(cmd.lane) ; ok {
+		if claim,ok := browser.crossing.claims[lane] ; ok {
+			claim.IncCar()
+			return
+		}
 	}
+
+	fmt.Printf("invalid lane in command: %s\n", cmd.lane)
 }

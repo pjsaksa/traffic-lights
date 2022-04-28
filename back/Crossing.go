@@ -9,7 +9,6 @@ import (
 type Crossing struct {
 	quit      chan bool
 	claimType string
-	lanes     map[Lane]struct{}
 	claims    map[Lane]Claim
 	rounds    int
 
@@ -18,25 +17,24 @@ type Crossing struct {
 
 func NewCrossing() Crossing {
 	cr := Crossing{
-		quit: make(chan bool, 1),
+		quit:      make(chan bool, 1),
 		claimType: "daytime",
-		lanes: map[Lane]struct{}{
-			{ NORTH, EAST  }: struct{}{},
-			{ NORTH, SOUTH }: struct{}{},
-			{ NORTH, WEST  }: struct{}{},
-			{ EAST,  SOUTH }: struct{}{},
-			{ EAST,  WEST  }: struct{}{},
-			{ EAST,  NORTH }: struct{}{},
-			{ SOUTH, WEST  }: struct{}{},
-			{ SOUTH, NORTH }: struct{}{},
-			{ SOUTH, EAST  }: struct{}{},
-			{ WEST,  NORTH }: struct{}{},
-			{ WEST,  EAST  }: struct{}{},
-			{ WEST,  SOUTH }: struct{}{},
-		},
-		claims: map[Lane]Claim{},
-		browsers: map[*Browser]struct{}{},
+		claims:    map[Lane]Claim{},
+		browsers:  map[*Browser]struct{}{},
 	}
+
+	cr._initLane(Lane{ NORTH, EAST  })
+	cr._initLane(Lane{ NORTH, SOUTH })
+	cr._initLane(Lane{ NORTH, WEST  })
+	cr._initLane(Lane{ EAST,  SOUTH })
+	cr._initLane(Lane{ EAST,  WEST  })
+	cr._initLane(Lane{ EAST,  NORTH })
+	cr._initLane(Lane{ SOUTH, WEST  })
+	cr._initLane(Lane{ SOUTH, NORTH })
+	cr._initLane(Lane{ SOUTH, EAST  })
+	cr._initLane(Lane{ WEST,  NORTH })
+	cr._initLane(Lane{ WEST,  EAST  })
+	cr._initLane(Lane{ WEST,  SOUTH })
 
 	go cr.Run()
 
@@ -44,30 +42,6 @@ func NewCrossing() Crossing {
 }
 
 // methods
-
-func (cr *Crossing) AccessClaim(lane Lane) Claim {
-	if existingClaim,ok := cr.claims[lane] ; ok {
-		return existingClaim
-	} else {
-		var newClaim Claim
-
-		switch cr.claimType {
-		case "daytime":
-			newClaim = &DaytimeClaim{
-				ClaimBase: ClaimBase{
-					crossing: cr,
-					lane: lane,
-				},
-			}
-		default:
-			panic("invalid claim type: " + cr.claimType)
-		}
-
-		cr.claims[lane] = newClaim
-
-		return newClaim
-	}
-}
 
 func (cr *Crossing) Blocks(lane1,lane2 Lane) bool {
 	cr.Valid(lane1)
@@ -84,13 +58,13 @@ func (cr *Crossing) Blocks(lane1,lane2 Lane) bool {
 	return _blocks2(cr, lane1, lane2) || _blocks2(cr, lane2, lane1)
 }
 
-func (cr *Crossing) Lane(name string) *Lane {
-	for lane := range cr.lanes {
+func (cr *Crossing) Lane(name string) (Lane, bool) {
+	for lane := range cr.claims {
 		if lane.String() == name {
-			return &lane
+			return lane,true
 		}
 	}
-	return nil
+	return Lane{},false
 }
 
 func (cr *Crossing) Run() {
@@ -130,8 +104,7 @@ func sortClaims(claims []Claim) {
 func (cr *Crossing) Tick() {
 	var claims []Claim
 
-	for lane := range cr.lanes {
-		cl := cr.AccessClaim(lane)
+	for _,cl := range cr.claims {
 		cl.IncTick()
 
 		claims = append(claims, cl)
@@ -182,7 +155,7 @@ func (cr *Crossing) Tick() {
 }
 
 func (cr *Crossing) Valid(lane Lane) {
-	_,ok := cr.lanes[lane]
+	_,ok := cr.claims[lane]
 	if !ok {
 		panic("invalid lane: " + lane.String())
 	}
@@ -201,4 +174,22 @@ func _blocks2(cr *Crossing, lane1,lane2 Lane) bool {
 	}
 
 	return false
+}
+
+func (cr *Crossing) _initLane(lane Lane) {
+	var newClaim Claim
+
+	switch cr.claimType {
+	case "daytime":
+		newClaim = &DaytimeClaim{
+			ClaimBase: ClaimBase{
+				crossing: cr,
+				lane: lane,
+			},
+		}
+	default:
+		panic("invalid claim type: " + cr.claimType)
+	}
+
+	cr.claims[lane] = newClaim
 }

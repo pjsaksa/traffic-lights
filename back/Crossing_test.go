@@ -21,7 +21,7 @@ func reportLaneSourceBlock(cr Crossing, lane1 Lane) {
 
 	var outputList []string
 
-	for lane2 := range cr.lanes {
+	for lane2 := range cr.claims {
 		if output, ok := reportLanePairBlock(cr, lane1, lane2) ; ok {
 			outputList = append(outputList, output)
 		}
