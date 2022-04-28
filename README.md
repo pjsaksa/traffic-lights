@@ -90,10 +90,11 @@ Lane state values:
 | Value | Description                              |
 |-------|------------------------------------------|
 | 0     | Unused                                   |
-| 1     | Stop (Red light on)                      |
-| 2     | Transition to Go (Red + Yellow light on) |
-| 3     | Go (Green light on)                      |
-| 4     | Transition to Stop (Yellow light on)     |
-| 5     | Out of order (Yellow light blinking)     |
+| 1     | None                                     |
+| 2     | Stop (Red light on)                      |
+| 3     | Transition to Go (Red + Yellow light on) |
+| 4     | Go (Green light on)                      |
+| 5     | Transition to Stop (Yellow light on)     |
+| 6     | Out of order (Yellow light blinking)     |
 
 
