@@ -2,87 +2,95 @@
 
 #include <stdio.h>
 
-#define REQUEST_STATE_CMD              (4)
-#define REQUEST_STATE_CMD_STATE_STOP   (1)
-#define REQUEST_STATE_CMD_STATE_GO     (2)
+#define LANE_STATE_REQ_CMD       (1)
+#define DEBUG_CMD                (2)
+#define SET_PARAMETER_CMD        (3)
+#define GET_PARAMETER_CMD        (4)
 
-static message_id_t decode_message_id(uint32_t raw_message)
+#define LANE_STATE_REQ_CMD_STOP         (1)
+#define LANE_STATE_REQ_CMD_GO           (2)
+#define LANE_STATE_REQ_CMD_OUT_OF_ORDER (3)
+
+#define RIGHT_LANE_STATE_REQ_INDEX      (0)
+#define CENTER_LANE_STATE_REQ_INDEX     (1)
+#define LEFT_LANE_STATE_REQ_INDEX       (2)
+
+static command_id_t decode_message_id(uint8_t command_id)
 {
-    uint8_t cmd_id = raw_message >> 24U;
-    message_id_t message_id = MESSAGE_ID_UNKNOWN;
-
-    if (cmd_id == REQUEST_STATE_CMD)
+    switch (command_id)
     {
-        message_id = MESSAGE_ID_REQUEST_STATE;
-    }
-
-    return message_id;
-}
-
-static message_state_req_t decode_raw_state(uint32_t raw_state)
-{
-    switch (raw_state)
-    {
-    case REQUEST_STATE_CMD_STATE_GO:
-        return MESSAGE_STATE_REQ_GO;
-    case REQUEST_STATE_CMD_STATE_STOP:
-        return MESSAGE_STATE_REQ_STOP;
+    case LANE_STATE_REQ_CMD:
+        return COMMAND_ID_REQUEST_STATE;
+    case DEBUG_CMD:
+        return COMMAND_ID_DEBUG;
+    case SET_PARAMETER_CMD:
+        return COMMAND_ID_SET_PARAM;
+    case GET_PARAMETER_CMD:
+        return COMMAND_ID_GET_PARAM;
     default:
         break;
     }
 
-    return MESSAGE_STATE_REQ_UNKNOWN;
+    return COMMAND_ID_UNKNOWN;
 }
 
-static message_state_req_t decode_left_lane_state_request(uint32_t raw_data)
+static cmd_lane_state_req_t decode_raw_lane_state(uint32_t raw_state)
 {
-    return decode_raw_state((raw_data >> 16U) & 0x000000FF);
-}
-
-static message_state_req_t decode_center_lane_state_request(uint32_t raw_data)
-{
-    return decode_raw_state((raw_data >> 8U) & 0x000000FF);
-}
-
-static message_state_req_t decode_right_lane_state_request(uint32_t raw_data)
-{
-    return decode_raw_state(raw_data & 0x000000FF);
-}
-
-static message_t decode_request_state_message(uint32_t raw_data)
-{
-    message_t request_state_msg;
-    request_state_msg.id = MESSAGE_ID_REQUEST_STATE;
-
-    request_state_msg.request_state.left_lane.requested_state =
-        decode_left_lane_state_request(raw_data);
-
-    request_state_msg.request_state.center_lane.requested_state =
-        decode_center_lane_state_request(raw_data);
-
-    request_state_msg.request_state.right_lane.requested_state =
-        decode_right_lane_state_request(raw_data);
-
-    return request_state_msg;
-}
-
-static message_t decode_unknown_message(void)
-{
-    return (message_t){ .id = MESSAGE_ID_UNKNOWN };
-}
-
-message_t data_decoder_handle_message(uint32_t raw_message)
-{
-    message_id_t message_id = decode_message_id(raw_message);
-
-    switch (message_id)
+    switch (raw_state)
     {
-    case MESSAGE_ID_REQUEST_STATE:
-        return decode_request_state_message(raw_message);
-    case MESSAGE_ID_DEBUG:
-    case MESSAGE_ID_SET_PARAM:
-    case MESSAGE_ID_GET_PARAM:
-    case MESSAGE_ID_UNKNOWN:
+    case LANE_STATE_REQ_CMD_GO:
+        return CMD_LANE_STATE_REQ_GO;
+    case LANE_STATE_REQ_CMD_STOP:
+        return CMD_LANE_STATE_REQ_STOP;
+    case LANE_STATE_REQ_CMD_OUT_OF_ORDER:
+        return CMD_LANE_STATE_REQ_OUT_OF_ORDER;
+    default:
+        break;
+    }
+
+    return CMD_LANE_STATE_REQ_UNKNOWN;
+}
+
+static cmd_lane_state_req_t decode_lane_state_request(uint64_t raw_data, uint8_t index)
+{
+    uint8_t* data = (uint8_t*)&raw_data;
+    return decode_raw_lane_state(data[index]);
+}
+
+static command_t decode_request_state_message(uint64_t raw_data)
+{
+    command_t message;
+    message.id = COMMAND_ID_REQUEST_STATE;
+
+    message.request_state.left_lane_state =
+        decode_lane_state_request(raw_data, LEFT_LANE_STATE_REQ_INDEX);
+
+    message.request_state.center_lane_state =
+        decode_lane_state_request(raw_data, CENTER_LANE_STATE_REQ_INDEX);
+
+    message.request_state.right_lane_state =
+        decode_lane_state_request(raw_data, RIGHT_LANE_STATE_REQ_INDEX);
+
+    return message;
+}
+
+static command_t decode_unknown_message(void)
+{
+    return (command_t){ .id = COMMAND_ID_UNKNOWN };
+}
+
+command_t data_decoder_decode_command(raw_command_t raw_command)
+{
+    command_id_t command_id = decode_message_id(raw_command.command_id);
+
+    switch (command_id)
+    {
+    case COMMAND_ID_REQUEST_STATE:
+        return decode_request_state_message(raw_command.data);
+    case COMMAND_ID_DEBUG:
+    case COMMAND_ID_SET_PARAM:
+    case COMMAND_ID_GET_PARAM:
+    case COMMAND_ID_UNKNOWN:
     default:
         break;
     }

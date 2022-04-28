@@ -16,13 +16,13 @@ add_subdirectory(data_comm)
 add_subdirectory(data_decoder)
 add_subdirectory(lane)
 add_subdirectory(messages)
-add_subdirectory(traffic_light_group)
+add_subdirectory(lane_group)
 
 add_executable(traffic_lights main.c)
 target_link_libraries(traffic_lights
     pico_stdlib
     hardware_spi
-    traffic_light_group
+    lane_group
     lane
     data_decoder
     data_comm)

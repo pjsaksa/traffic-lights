@@ -2,4 +2,4 @@
 
 #include "messages.h"
 
-message_t data_decoder_handle_message(uint32_t raw_message);
+command_t data_decoder_decode_command(raw_command_t raw_command);
