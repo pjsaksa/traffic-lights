@@ -52,10 +52,21 @@ int main()
 
     printf("Initialization done. Starting...\n");
 
+    raw_response_t raw_response = {0};
+
     while (true) {
-        raw_command_t raw_command = data_comm_exchange_raw_data(&data_comm, 0);
-        command_t message = data_decoder_decode_command(raw_command);
-        lane_group_execute(&light_group, message);
+        raw_command_t raw_command;
+
+        bool command_received = data_comm_exchange_raw_data(&data_comm,
+                                                            &raw_command,
+                                                            &raw_response);
+
+        if (command_received)
+        {
+            printf("Handling command\n");
+            command_t command = data_decoder_decode_command(raw_command);
+            lane_group_handle_command(&light_group, command);
+        }
     }
 
 }

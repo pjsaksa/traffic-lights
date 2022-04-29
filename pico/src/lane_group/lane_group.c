@@ -46,19 +46,33 @@ static bool request_lane_state(lane_t* lane, cmd_lane_state_req_t new_state)
     return success;
 }
 
-void lane_group_init(lane_group_t* logic,
-                     const lane_group_config_t* config)
+static int64_t out_of_order(alarm_id_t id, void *user_data)
 {
-    logic->left_lane = config->left_lane;
-    logic->center_lane = config->center_lane;
-    logic->right_lane = config->right_lane;
+    (void)id;
 
-    logic->previousCommand_ms = get_ms();
-    logic->out_of_order = false;
+    lane_group_t* group = (lane_group_t*)user_data;
+
+    group->out_of_order = true;
+
+    set_lane_out_of_order(group->left_lane);
+    set_lane_out_of_order(group->center_lane);
+    set_lane_out_of_order(group->right_lane);
 }
 
-void lane_group_execute(lane_group_t* group,
-                        command_t command)
+void lane_group_init(lane_group_t* group,
+                     const lane_group_config_t* config)
+{
+    group->left_lane = config->left_lane;
+    group->center_lane = config->center_lane;
+    group->right_lane = config->right_lane;
+
+    group->out_of_order = false;
+    group->out_of_order_alarm_id =
+        add_alarm_in_ms(OUT_OF_ORDER_TIMEOUT_MS, &out_of_order, group, false);
+}
+
+void lane_group_handle_command(lane_group_t* group,
+                               command_t command)
 {
     if (command.id == COMMAND_ID_REQUEST_STATE)
     {
@@ -73,19 +87,12 @@ void lane_group_execute(lane_group_t* group,
 
         if (success)
         {
-            group->previousCommand_ms = get_ms();
-        }
-    }
-
-    if (!group->out_of_order)
-    {
-        if (get_ms() - group->previousCommand_ms > OUT_OF_ORDER_TIMEOUT_MS)
-        {
-            group->out_of_order = true;
-
-            set_lane_out_of_order(group->left_lane);
-            set_lane_out_of_order(group->center_lane);
-            set_lane_out_of_order(group->right_lane);
+            cancel_alarm(group->out_of_order_alarm_id);
+            group->out_of_order_alarm_id = add_alarm_in_ms(
+                OUT_OF_ORDER_TIMEOUT_MS,
+                &out_of_order,
+                group,
+                false);
         }
     }
 }

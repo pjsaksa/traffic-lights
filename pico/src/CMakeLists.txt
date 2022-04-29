@@ -12,6 +12,7 @@ option(ENABLE_TEST_BUILDS "Compile test targets" OFF)
 # Initialize the SDK
 pico_sdk_init()
 
+add_subdirectory(clock)
 add_subdirectory(data_comm)
 add_subdirectory(data_decoder)
 add_subdirectory(lane)

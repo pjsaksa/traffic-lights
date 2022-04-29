@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <assert.h>
 
 typedef struct {
     uint8_t frame_id;
@@ -17,6 +18,8 @@ typedef struct {
     uint8_t response_id;
     uint64_t data;
 } raw_response_t;
+
+static_assert(sizeof(raw_command_t) == sizeof(raw_response_t), "raw_command_t and raw_response_t must be of same size");
 
 typedef enum
 {

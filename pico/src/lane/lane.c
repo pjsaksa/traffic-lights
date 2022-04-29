@@ -43,6 +43,7 @@ static bool blink_yellow_light(struct repeating_timer* timer)
 static void start_out_of_order_blink(lane_t* lane)
 {
     turn_lights_off(lane);
+    cancel_transition_if_active(lane);
     add_repeating_timer_ms(OUT_OF_ORDER_BLINK_INTERVAL_MS,
                            &blink_yellow_light,
                            lane,
@@ -130,6 +131,8 @@ void lane_request_state(lane_t* lane, lane_state_req_t state_req)
     {
         return;
     }
+
+    printf("Lane to state: %d\n", state_req);
 
     lane->target_req_state = state_req;
 
