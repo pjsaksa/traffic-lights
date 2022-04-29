@@ -78,23 +78,27 @@ Lane state request values:
 
 Contents of the 'data' field in response when 'response_id' equals to '1' (Lane states)
 
-| Byte (LSB) | Description         |
-|------------|---------------------|
-| 0          | Right lane state.   |
-| 1          | Center lane state.  |
-| 2          | Left lane state.    |
-| 3 - 7      | Reserved.           |
+| Byte (LSB) | Description                                                   |
+|------------|---------------------------------------------------------------|
+| 0          | Right lane: low nibble: state, high nibble: cars on lane      |
+| 1          | Center lane: low nibble: state, high nibble: cars on lane     |
+| 2          | Left lane state: low nibble: state, high nibble: cars on lane |
+| 3 - 7      | Reserved.                                                     |
 
 Lane state values:
 
 | Value | Description                              |
 |-------|------------------------------------------|
-| 0     | Unused                                   |
-| 1     | None                                     |
-| 2     | Stop (Red light on)                      |
-| 3     | Transition to Go (Red + Yellow light on) |
-| 4     | Go (Green light on)                      |
-| 5     | Transition to Stop (Yellow light on)     |
-| 6     | Out of order (Yellow light blinking)     |
+| 0     | None                                     |
+| 1     | Stop (Red light on)                      |
+| 2     | Transition to Go (Red + Yellow light on) |
+| 3     | Go (Green light on)                      |
+| 4     | Transition to Stop (Yellow light on)     |
+| 5     | Out of order (Yellow light blinking)     |
 
+Cars on lane values:
 
+| Value | Description              |
+|-------|--------------------------|
+| 0     | No cars on lane          |
+| 1     | One or many cars on lane |
