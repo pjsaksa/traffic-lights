@@ -1,4 +1,5 @@
 #include "lane.h"
+#include "car_sensor.h"
 
 #include <pico/stdlib.h>
 
@@ -9,7 +10,7 @@
 
 static void control_light(uint light_gpio, bool turn_on)
 {
-    if (light_gpio > 0)
+    if (light_gpio != LANE_UNUSED_GPIO)
     {
         gpio_put(light_gpio, turn_on);
     }
@@ -77,6 +78,7 @@ static int64_t state_transition_completed(alarm_id_t id, void* user_data)
         control_light(lane->green_light, true);
 
         lane->state = LANE_STATE_GO;
+        car_sensor_clear(lane->sensor);
     }
 
     return 0;
@@ -110,7 +112,7 @@ static void start_transition_to_go(lane_t* lane)
 
 static void init_light_gpio(uint gpio)
 {
-    if (gpio > 0)
+    if (gpio != LANE_UNUSED_GPIO)
     {
         gpio_init(gpio);
         gpio_set_dir(gpio, GPIO_OUT);
@@ -122,6 +124,26 @@ static void init_light_gpios(lane_t* lane)
     init_light_gpio(lane->red_light);
     init_light_gpio(lane->yellow_light);
     init_light_gpio(lane->green_light);
+}
+
+void lane_init(lane_t* lane,
+               uint red_light,
+               uint yellow_light,
+               uint green_light,
+               car_sensor_t* sensor)
+{
+    lane->state = LANE_STATE_NONE;
+    lane->target_req_state = LANE_STATE_REQ_NONE;
+
+    lane->red_light = red_light;
+    lane->yellow_light = yellow_light;
+    lane->green_light = green_light;
+
+    lane->sensor = sensor;
+
+    lane->state_transition_alarm = 0;
+
+    init_light_gpios(lane);
 }
 
 void lane_request_state(lane_t* lane, lane_state_req_t state_req)
@@ -172,19 +194,7 @@ lane_state_t lane_get_state(lane_t* lane)
     return lane->state;
 }
 
-void lane_init(lane_t* lane,
-               uint red_light,
-               uint yellow_light,
-               uint green_light)
+bool lane_get_cars_on_lane(lane_t* lane)
 {
-    lane->state = LANE_STATE_NONE;
-    lane->target_req_state = LANE_STATE_REQ_NONE;
-
-    lane->red_light = red_light;
-    lane->yellow_light = yellow_light;
-    lane->green_light = green_light;
-
-    lane->state_transition_alarm = 0;
-
-    init_light_gpios(lane);
+    return car_sensor_cars_detected(lane->sensor);
 }
