@@ -45,7 +45,7 @@ static void start_out_of_order_blink(lane_t* lane)
 {
     turn_lights_off(lane);
     cancel_transition_if_active(lane);
-    add_repeating_timer_ms(OUT_OF_ORDER_BLINK_INTERVAL_MS,
+    lane->out_of_order = add_repeating_timer_ms(OUT_OF_ORDER_BLINK_INTERVAL_MS,
                            &blink_yellow_light,
                            lane,
                            &lane->out_of_order_blink_timer);
@@ -53,7 +53,11 @@ static void start_out_of_order_blink(lane_t* lane)
 
 static void stop_out_of_order_blink(lane_t* lane)
 {
-    cancel_repeating_timer(&lane->out_of_order_blink_timer);
+    if (lane->out_of_order)
+    {
+        cancel_repeating_timer(&lane->out_of_order_blink_timer);
+        lane->out_of_order = false;
+    }
 }
 
 static int64_t state_transition_completed(alarm_id_t id, void* user_data)
@@ -78,7 +82,7 @@ static int64_t state_transition_completed(alarm_id_t id, void* user_data)
         control_light(lane->green_light, true);
 
         car_sensor_clear(lane->sensor);
-        
+
         lane->state = LANE_STATE_GO;
     }
 
@@ -97,7 +101,7 @@ static void start_transition_to_stop(lane_t* lane)
         YELLOW_LIGHT_TRANSITION_DELAY_MS,
         &state_transition_completed,
         lane,
-        true);
+        false);
 }
 
 static void start_transition_to_go(lane_t* lane)
@@ -110,7 +114,7 @@ static void start_transition_to_go(lane_t* lane)
         YELLOW_LIGHT_TRANSITION_DELAY_MS,
         &state_transition_completed,
         lane,
-        true);
+        false);
 }
 
 static void init_light_gpio(uint gpio)
@@ -145,6 +149,7 @@ void lane_init(lane_t* lane,
     lane->sensor = sensor;
 
     lane->state_transition_alarm = 0;
+    lane->out_of_order = false;
 
     init_light_gpios(lane);
 }
@@ -200,4 +205,14 @@ lane_state_t lane_get_state(lane_t* lane)
 bool lane_get_cars_on_lane(lane_t* lane)
 {
     return car_sensor_cars_detected(lane->sensor);
+}
+
+void lane_set_debug_command(lane_t* lane, bool red_on, bool yellow_on, bool green_on)
+{
+    cancel_transition_if_active(lane);
+    stop_out_of_order_blink(lane);
+
+    control_light(lane->red_light, red_on);
+    control_light(lane->yellow_light, yellow_on);
+    control_light(lane->green_light, green_on);
 }

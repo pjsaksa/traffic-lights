@@ -6,11 +6,6 @@
 
 #define OUT_OF_ORDER_TIMEOUT_MS     (10000)
 
-static inline uint32_t get_ms(void)
-{
-    return to_ms_since_boot(get_absolute_time());
-}
-
 static void set_lane_out_of_order(lane_t* lane)
 {
     if (lane)
@@ -84,6 +79,16 @@ static int64_t out_of_order(alarm_id_t id, void *user_data)
     set_lane_out_of_order(group->right_lane);
 }
 
+static void reset_out_of_order_alarm(lane_group_t* group)
+{
+    cancel_alarm(group->out_of_order_alarm_id);
+    group->out_of_order_alarm_id = add_alarm_in_ms(
+        OUT_OF_ORDER_TIMEOUT_MS,
+        &out_of_order,
+        group,
+        false);
+}
+
 static response_t make_lane_state_response(lane_group_t* group)
 {
     response_t response = { .id = RESPONSE_ID_LANE_STATES };
@@ -114,6 +119,49 @@ void lane_group_init(lane_group_t* group,
         add_alarm_in_ms(OUT_OF_ORDER_TIMEOUT_MS, &out_of_order, group, false);
 }
 
+static response_t handle_state_request(lane_group_t* group, request_state_command_t command)
+{
+    bool success = request_lane_state(group->left_lane,
+                                      command.left_lane_state);
+
+    success = request_lane_state(group->center_lane,
+                                 command.center_lane_state) && success;
+
+    success = request_lane_state(group->right_lane,
+                                 command.right_lane_state) && success;
+
+    if (success)
+    {
+        reset_out_of_order_alarm(group);
+    }
+
+    return make_lane_state_response(group);
+}
+
+response_t handle_debug_command(lane_group_t* group, debug_command_t command)
+{
+    response_t response = { .id = RESPONSE_ID_DEBUG };
+
+    reset_out_of_order_alarm(group);
+
+    lane_set_debug_command(group->right_lane,
+                           command.right_lane_red_on,
+                           command.right_lane_yellow_on,
+                           command.right_lane_green_on);
+
+    lane_set_debug_command(group->center_lane,
+                           command.center_lane_red_on,
+                           command.center_lane_yellow_on,
+                           command.center_lane_green_on);
+
+    lane_set_debug_command(group->left_lane,
+                           command.left_lane_red_on,
+                           command.left_lane_yellow_on,
+                           command.left_lane_green_on);
+
+    return response;
+}
+
 response_t lane_group_handle_command(lane_group_t* group,
                                      command_t command)
 {
@@ -121,26 +169,11 @@ response_t lane_group_handle_command(lane_group_t* group,
 
     if (command.id == COMMAND_ID_REQUEST_STATE)
     {
-        bool success = request_lane_state(group->left_lane,
-                                          command.request_state.left_lane_state);
-
-        success = request_lane_state(group->center_lane,
-                                     command.request_state.center_lane_state) && success;
-
-        success = request_lane_state(group->right_lane,
-                                     command.request_state.right_lane_state) && success;
-
-        if (success)
-        {
-            cancel_alarm(group->out_of_order_alarm_id);
-            group->out_of_order_alarm_id = add_alarm_in_ms(
-                OUT_OF_ORDER_TIMEOUT_MS,
-                &out_of_order,
-                group,
-                false);
-        }
-
-        response = make_lane_state_response(group);
+        response = handle_state_request(group, command.request_state);
+    }
+    else if (command.id == COMMAND_ID_DEBUG)
+    {
+        response = handle_debug_command(group, command.debug);
     }
 
     return response;

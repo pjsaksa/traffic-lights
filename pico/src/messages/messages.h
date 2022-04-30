@@ -35,17 +35,7 @@ typedef enum
     COMMAND_ID_UNKNOWN
 } command_id_t;
 
-typedef struct {
 
-} debug_command_t;
-
-typedef struct {
-
-} set_param_command_t;
-
-typedef struct {
-
-} get_param_command_t;
 
 typedef enum {
     CMD_LANE_STATE_REQ_STOP,
@@ -61,19 +51,40 @@ typedef struct {
 } request_state_command_t;
 
 typedef struct {
+    bool right_lane_red_on;
+    bool right_lane_yellow_on;
+    bool right_lane_green_on;
+    bool center_lane_red_on;
+    bool center_lane_yellow_on;
+    bool center_lane_green_on;
+    bool left_lane_red_on;
+    bool left_lane_yellow_on;
+    bool left_lane_green_on;
+} debug_command_t;
+
+typedef struct {
+
+} set_param_command_t;
+
+typedef struct {
+
+} get_param_command_t;
+
+typedef struct {
     command_id_t id;
 
     union {
+        request_state_command_t request_state;
         debug_command_t debug;
         set_param_command_t set_param;
         get_param_command_t get_param;
-        request_state_command_t request_state;
     };
 } command_t;
 
 typedef enum {
     RESPONSE_ID_UNKNOWN,
     RESPONSE_ID_LANE_STATES,
+    RESPONSE_ID_DEBUG,
     RESPONSE_ID_PARAMETER_VALUE
 } response_id_t;
 

@@ -56,6 +56,25 @@ Lane state request values:
 | 2     | Go (Green light)                     |
 | 3     | Out of order (Yellow light blinking) |
 
+#### Debug command
+
+With debug command central logic can control individual lights in the light group.
+
+Contents of the 'data' field when 'command_id' equals to 2 (Debug):
+
+| Bit (LSB) | Description           |
+|-----------|-----------------------|
+| 0         | Right lane RED on     |
+| 1         | Right lane YELLOW on  |
+| 2         | Right lane GREEN on   |
+| 3         | Center lane RED on    |
+| 4         | Center lane YELLOW on |
+| 5         | Center lane GREEN on  |
+| 6         | Left lane RED on      |
+| 7         | Left lane YELLOW on   |
+| 8         | Left lane GREEN on    |
+
+
 ### Response (transmitted by SPI slave):
 
 | Size   | Name        | Description                                                      |
@@ -72,7 +91,8 @@ Lane state request values:
 |-------|-----------------|
 | 0     | Unused          |
 | 1     | Lane states     |
-| 2     | Parameter value |
+| 2     | Debug           |
+| 3     | Parameter value |
 
 #### Lane states response
 
