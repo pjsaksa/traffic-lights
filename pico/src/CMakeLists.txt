@@ -16,6 +16,7 @@ add_subdirectory(car_sensor)
 add_subdirectory(clock)
 add_subdirectory(data_comm)
 add_subdirectory(data_decoder)
+add_subdirectory(data_encoder)
 add_subdirectory(lane)
 add_subdirectory(messages)
 add_subdirectory(lane_group)
@@ -27,6 +28,7 @@ target_link_libraries(traffic_lights
     lane_group
     lane
     data_decoder
+    data_encoder
     data_comm
     car_sensor)
 pico_add_uf2_output(traffic_lights)

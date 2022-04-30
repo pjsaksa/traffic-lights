@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 #include <assert.h>
+#include <stdbool.h>
+
+/* raw frames used on SPI bus */
 
 typedef struct {
     uint8_t frame_id;
@@ -20,6 +23,8 @@ typedef struct {
 } raw_response_t;
 
 static_assert(sizeof(raw_command_t) == sizeof(raw_response_t), "raw_command_t and raw_response_t must be of same size");
+
+/* decoded messages used internally */
 
 typedef enum
 {
@@ -65,3 +70,43 @@ typedef struct {
         request_state_command_t request_state;
     };
 } command_t;
+
+typedef enum {
+    RESPONSE_ID_UNKNOWN,
+    RESPONSE_ID_LANE_STATES,
+    RESPONSE_ID_PARAMETER_VALUE
+} response_id_t;
+
+typedef enum {
+    RESPONSE_LANE_STATE_UNKNOWN,
+    RESPONSE_LANE_STATE_NONE,
+    RESPONSE_LANE_STATE_STOP,
+    RESPONSE_LANE_STATE_TO_GO,
+    RESPONSE_LANE_STATE_GO,
+    RESPONSE_LANE_STATE_TO_STOP,
+    RESPONSE_LANE_STATE_OUT_OF_ORDER
+} response_lane_state_t;
+
+typedef struct {
+    response_lane_state_t left_lane_state;
+    bool left_lane_cars_on_lane;
+
+    response_lane_state_t center_lane_state;
+    bool center_lane_cars_on_lane;
+
+    response_lane_state_t right_lane_state;
+    bool right_lane_cars_on_lane;
+} response_lane_states_t;
+
+typedef struct {
+
+} response_parameter_value_t;
+
+typedef struct {
+    response_id_t id;
+
+    union {
+        response_lane_states_t lane_states;
+        response_parameter_value_t parameter_value;
+    };
+} response_t;

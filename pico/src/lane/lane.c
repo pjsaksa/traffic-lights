@@ -78,7 +78,6 @@ static int64_t state_transition_completed(alarm_id_t id, void* user_data)
         control_light(lane->green_light, true);
 
         lane->state = LANE_STATE_GO;
-        car_sensor_clear(lane->sensor);
     }
 
     return 0;
@@ -89,6 +88,8 @@ static void start_transition_to_stop(lane_t* lane)
     control_light(lane->red_light, false);
     control_light(lane->yellow_light, true);
     control_light(lane->green_light, false);
+
+    car_sensor_clear(lane->sensor);
 
     lane->state_transition_alarm = add_alarm_in_ms(
         YELLOW_LIGHT_TRANSITION_DELAY_MS,

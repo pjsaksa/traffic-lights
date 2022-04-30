@@ -2,6 +2,7 @@
 #include "lane.h"
 #include "data_comm.h"
 #include "data_decoder.h"
+#include "data_encoder.h"
 #include "car_sensor.h"
 
 #include <pico/stdlib.h>
@@ -109,12 +110,11 @@ int main()
             = data_comm_exchange_raw_data(&data_comm, raw_response);
 
         command_t command = data_decoder_decode_command(raw_command);
-        lane_group_handle_command(&light_group, command);
 
-        raw_response.frame_id = raw_command.frame_id;
-        raw_response.response_id = 0;
-        raw_response.data = 0;
+        response_t response = lane_group_handle_command(&light_group, command);
 
+        raw_response =
+            data_encoder_encode_response(raw_command.frame_id, response);
     }
 
 }

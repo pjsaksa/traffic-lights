@@ -28,5 +28,5 @@ typedef struct
 void lane_group_init(lane_group_t* group,
                      const lane_group_config_t* config);
 
-void lane_group_handle_command(lane_group_t* group,
-                               command_t command);
+response_t lane_group_handle_command(lane_group_t* group,
+                                     command_t command);

@@ -46,6 +46,31 @@ static bool request_lane_state(lane_t* lane, cmd_lane_state_req_t new_state)
     return success;
 }
 
+static response_lane_state_t get_lane_state(lane_t* lane)
+{
+    lane_state_t state = lane_get_state(lane);
+
+    switch (state)
+    {
+    case LANE_STATE_NONE:
+        return RESPONSE_LANE_STATE_NONE;
+    case LANE_STATE_STOP:
+        return RESPONSE_LANE_STATE_STOP;
+    case LANE_STATE_TRANSITION_TO_GO:
+        return RESPONSE_LANE_STATE_TO_GO;
+    case LANE_STATE_GO:
+        return RESPONSE_LANE_STATE_GO;
+    case LANE_STATE_TRANSITION_TO_STOP:
+        return RESPONSE_LANE_STATE_TO_STOP;
+    case LANE_STATE_OUT_OF_ORDER:
+        return RESPONSE_LANE_STATE_OUT_OF_ORDER;
+    default:
+        break;
+    }
+
+    return RESPONSE_LANE_STATE_UNKNOWN;
+}
+
 static int64_t out_of_order(alarm_id_t id, void *user_data)
 {
     (void)id;
@@ -57,6 +82,24 @@ static int64_t out_of_order(alarm_id_t id, void *user_data)
     set_lane_out_of_order(group->left_lane);
     set_lane_out_of_order(group->center_lane);
     set_lane_out_of_order(group->right_lane);
+}
+
+static response_t make_lane_state_response(lane_group_t* group)
+{
+    response_t response = { .id = RESPONSE_ID_LANE_STATES };
+
+    response.lane_states.left_lane_state = get_lane_state(group->left_lane);
+    response.lane_states.center_lane_state = get_lane_state(group->center_lane);
+    response.lane_states.right_lane_state = get_lane_state(group->right_lane);
+
+    response.lane_states.left_lane_cars_on_lane =
+        lane_get_cars_on_lane(group->left_lane);
+    response.lane_states.center_lane_cars_on_lane =
+        lane_get_cars_on_lane(group->center_lane);
+    response.lane_states.right_lane_cars_on_lane =
+        lane_get_cars_on_lane(group->right_lane);
+
+    return response;
 }
 
 void lane_group_init(lane_group_t* group,
@@ -71,9 +114,11 @@ void lane_group_init(lane_group_t* group,
         add_alarm_in_ms(OUT_OF_ORDER_TIMEOUT_MS, &out_of_order, group, false);
 }
 
-void lane_group_handle_command(lane_group_t* group,
-                               command_t command)
+response_t lane_group_handle_command(lane_group_t* group,
+                                     command_t command)
 {
+    response_t response = { .id = RESPONSE_ID_UNKNOWN };
+
     if (command.id == COMMAND_ID_REQUEST_STATE)
     {
         bool success = request_lane_state(group->left_lane,
@@ -94,5 +139,9 @@ void lane_group_handle_command(lane_group_t* group,
                 group,
                 false);
         }
+
+        response = make_lane_state_response(group);
     }
+
+    return response;
 }
