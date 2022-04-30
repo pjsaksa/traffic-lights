@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "messages.h"
+#include "clock.h"
 
 #include <stdio.h>
 
@@ -21,18 +22,18 @@
 static uint test_phase = 0;
 
 static uint8_t tx_frame_id = 0;
+static uint32_t last_phase_change_ms = 0;
 
 static void send_spi_data(raw_command_t command)
 {
     raw_response_t response;
 
-    int len = spi_write_read_blocking(SPI,
+    spi_write_read_blocking(SPI,
                             (const uint8_t*) &command,
                             (uint8_t*) &response,
                             sizeof(command));
 
-    printf("Tx len: %d\n", len);
-
+    printf("*******************************\n");
     printf("Tx: id: %d, cmd: %d, data: %llx\n",
            command.frame_id,
            command.command_id,
@@ -66,49 +67,52 @@ bool run_test_light_sequence(struct repeating_timer* timer)
 {
     (void)timer;
 
+    if (clock_get_ms() - last_phase_change_ms > 10000)
+    {
+        ++test_phase;
+        if (test_phase >= 6)
+        {
+            test_phase = 0;
+        }
+        last_phase_change_ms = clock_get_ms();
+    }
+
     switch (test_phase)
     {
     case 0:
         send_spi_data(make_state_req_command(CMD_STATE_STOP,
                                              CMD_STATE_STOP,
                                              CMD_STATE_STOP));
-        ++test_phase;
         break;
     case 1:
         send_spi_data(make_state_req_command(CMD_STATE_GO,
                                              CMD_STATE_STOP,
                                              CMD_STATE_STOP));
-        ++test_phase;
         break;
     case 2:
         send_spi_data(make_state_req_command(CMD_STATE_GO,
                                              CMD_STATE_GO,
                                              CMD_STATE_STOP));
-        ++test_phase;
         break;
     case 3:
         send_spi_data(make_state_req_command(CMD_STATE_GO,
                                              CMD_STATE_GO,
                                              CMD_STATE_GO));
-        ++test_phase;
         break;
     case 4:
         send_spi_data(make_state_req_command(CMD_STATE_STOP,
                                              CMD_STATE_GO,
                                              CMD_STATE_GO));
-        ++test_phase;
         break;
     case 5:
         send_spi_data(make_state_req_command(CMD_STATE_STOP,
                                              CMD_STATE_GO,
                                              CMD_STATE_STOP));
-        ++test_phase;
         break;
     case 6:
         send_spi_data(make_state_req_command(CMD_STATE_OUT_OF_ORDER,
                                              CMD_STATE_OUT_OF_ORDER,
                                              CMD_STATE_OUT_OF_ORDER));
-        test_phase = 0;
         break;
     default:
         break;
@@ -142,7 +146,7 @@ int main(void)
     spi_set_format(SPI, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
     repeating_timer_t test_timer;
-    add_repeating_timer_ms(7000, &run_test_light_sequence, 0, &test_timer);
+    add_repeating_timer_ms(1000, &run_test_light_sequence, 0, &test_timer);
 
     repeating_timer_t led_timer;
     add_repeating_timer_ms(500, &blink_led, 0, &led_timer);

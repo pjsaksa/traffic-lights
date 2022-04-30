@@ -80,26 +80,13 @@ static command_t decode_unknown_message(void)
     return (command_t){ .id = COMMAND_ID_UNKNOWN };
 }
 
-static void printhex(raw_command_t raw_command)
-{
-    uint8_t* ptr = (uint8_t*)&raw_command;
-    printf("raw: ");
-    for (int i = 0; i < sizeof(raw_command_t); ++i)
-    {
-        printf(":%02x", ptr[i]);
-    }
-    printf("\n");
-}
-
 command_t data_decoder_decode_command(raw_command_t raw_command)
 {
-    printhex(raw_command);
     command_id_t command_id = decode_message_id(raw_command.command_id);
 
     switch (command_id)
     {
     case COMMAND_ID_REQUEST_STATE:
-        printf("State request command\n");
         return decode_request_state_message(raw_command.data);
     case COMMAND_ID_DEBUG:
     case COMMAND_ID_SET_PARAM:

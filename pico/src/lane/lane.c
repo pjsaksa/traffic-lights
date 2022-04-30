@@ -77,6 +77,8 @@ static int64_t state_transition_completed(alarm_id_t id, void* user_data)
         control_light(lane->yellow_light, false);
         control_light(lane->green_light, true);
 
+        car_sensor_clear(lane->sensor);
+        
         lane->state = LANE_STATE_GO;
     }
 
