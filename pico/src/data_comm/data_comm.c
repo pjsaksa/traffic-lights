@@ -1,5 +1,4 @@
 #include "data_comm.h"
-#include "clock.h"
 
 #include <hardware/spi.h>
 #include <pico/stdlib.h>
@@ -8,7 +7,6 @@
 
 #define SPI_BAUDRATE    (500000)
 #define SPI_DATABITS    (8)
-#define SPI_EXCHANGE_TIMEOUT_MS (500)
 
 void data_comm_init(data_comm_t* data_comm,
                     spi_inst_t* spi,
@@ -29,67 +27,15 @@ void data_comm_init(data_comm_t* data_comm,
     spi_set_format(spi, SPI_DATABITS, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 }
 
-static bool exchange_timeout(uint32_t start_ms, uint32_t timeout_ms)
+raw_command_t data_comm_exchange_raw_data(data_comm_t* data_comm,
+                                          const raw_response_t raw_response)
 {
-    return clock_get_ms() - start_ms > timeout_ms;
-}
+    raw_command_t raw_command;
 
-static void flush_spi(data_comm_t* data_comm)
-{
-    const uint8_t tx_data = 0;
-    uint8_t rx_data;
+    spi_write_read_blocking(data_comm->spi,
+                            (const uint8_t*) &raw_response,
+                            (uint8_t*) &raw_command,
+                            sizeof(raw_command_t));
 
-    while (spi_is_readable(data_comm->spi))
-    {
-        spi_read_blocking(data_comm->spi, tx_data, &rx_data, sizeof(rx_data));
-    }
-}
-
-bool data_comm_exchange_raw_data(data_comm_t* data_comm,
-                                 raw_command_t* raw_command,
-                                 const raw_response_t* raw_response)
-{
-//    uint8_t byte_count = 0;
-//    uint32_t start_ms = clock_get_ms();
-//
-//    uint8_t* rx_buf = (uint8_t*)raw_command;
-//    const uint8_t* tx_buf = (const uint8_t*)raw_response;
-//
-//    if (spi_is_readable(data_comm->spi))
-//    {
-//        while (byte_count < sizeof(raw_command_t)
-//            && !exchange_timeout(start_ms, SPI_EXCHANGE_TIMEOUT_MS))
-//        {
-//            if (spi_is_readable(data_comm->spi))
-//            {
-//                spi_write_read_blocking(data_comm->spi,
-//                                        (const uint8_t*)&tx_buf[byte_count],
-//                                        (uint8_t*)&rx_buf[byte_count],
-//                                        sizeof(uint8_t));
-//                ++byte_count;
-//            }
-//        }
-//
-//        printf("count: %d\n", byte_count);
-//    }
-//
-//    flush_spi(data_comm);
-//
-//    return byte_count == sizeof(raw_command_t);
-
-    bool command_received = false;
-
-    if (spi_is_readable(data_comm->spi))
-    {
-        spi_write_read_blocking(data_comm->spi,
-                                (const uint8_t*) raw_response,
-                                (uint8_t*) raw_command,
-                                sizeof(raw_command_t));
-
-        command_received = true;
-    }
-
-//    flush_spi(data_comm);
-
-    return command_received;
+    return raw_command;
 }

@@ -16,6 +16,5 @@ void data_comm_init(data_comm_t* data_comm,
                     uint spi_clk,
                     uint spi_cs);
 
-bool data_comm_exchange_raw_data(data_comm_t* data_comm,
-                                 raw_command_t* raw_command,
-                                 const raw_response_t* raw_response);
+raw_command_t data_comm_exchange_raw_data(data_comm_t* data_comm,
+                                          const raw_response_t raw_response);

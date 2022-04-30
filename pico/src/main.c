@@ -54,19 +54,18 @@ int main()
 
     raw_response_t raw_response = {0};
 
-    while (true) {
-        raw_command_t raw_command;
+    while (true)
+    {
+        raw_command_t raw_command
+            = data_comm_exchange_raw_data(&data_comm, raw_response);
+        
+        command_t command = data_decoder_decode_command(raw_command);
+        lane_group_handle_command(&light_group, command);
 
-        bool command_received = data_comm_exchange_raw_data(&data_comm,
-                                                            &raw_command,
-                                                            &raw_response);
+        raw_response.frame_id = raw_command.frame_id;
+        raw_response.response_id = 0;
+        raw_response.data = 0;
 
-        if (command_received)
-        {
-            printf("Handling command\n");
-            command_t command = data_decoder_decode_command(raw_command);
-            lane_group_handle_command(&light_group, command);
-        }
     }
 
 }

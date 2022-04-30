@@ -22,17 +22,6 @@ static uint test_phase = 0;
 
 static uint8_t tx_frame_id = 0;
 
-static void printhex(raw_command_t raw_command)
-{
-    uint8_t* ptr = (uint8_t*)&raw_command;
-    printf("raw: ");
-    for (int i = 0; i < sizeof(raw_command_t); ++i)
-    {
-        printf(":%02x", ptr[i]);
-    }
-    printf("\n");
-}
-
 static void send_spi_data(raw_command_t command)
 {
     raw_response_t response;
@@ -53,8 +42,6 @@ static void send_spi_data(raw_command_t command)
            response.frame_id,
            response.response_id,
            response.data);
-
-    printhex(command);
 }
 
 raw_command_t make_state_req_command(uint8_t left_state,
