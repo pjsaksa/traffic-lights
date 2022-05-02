@@ -1,4 +1,4 @@
-BACK_FILES:=Browser.go Claim.go ClaimBase.go Command.go Crossing.go DaytimeClaim.go Direction.go Http.go Lane.go Pole.go Report.go main.go
+BACK_FILES:=Browser.go Claim.go ClaimBase.go Command.go Crossing.go DaytimeClaim.go Direction.go Http.go Lane.go Pole.go Report.go Wire.go WireSpi.go main.go
 GOBUILD=go build -o "$@"
 
 #
