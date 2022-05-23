@@ -9,8 +9,9 @@
 typedef struct {
     uint8_t frame_id;
     uint8_t checksum;
-    uint8_t reserved;
+    uint8_t reserved1;
     uint8_t command_id;
+    uint32_t reserved2;
     uint64_t data;
 } raw_command_t;
 
@@ -19,10 +20,12 @@ typedef struct {
     uint8_t checksum;
     uint8_t reserved;
     uint8_t response_id;
+    uint32_t reserved2;
     uint64_t data;
 } raw_response_t;
 
 static_assert(sizeof(raw_command_t) == sizeof(raw_response_t), "raw_command_t and raw_response_t must be of same size");
+static_assert(sizeof(raw_command_t) == 16, "foo");
 
 /* decoded messages used internally */
 

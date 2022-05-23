@@ -8,6 +8,21 @@
 #define SPI_BAUDRATE    (500000)
 #define SPI_DATABITS    (8)
 
+#ifdef DEBUG_PRINT
+static void printhex(const uint8_t* data, size_t size)
+{
+    for (unsigned i = 0; i < size; ++i)
+    {
+        printf("%02x", data[i]);
+        if (i + 1 < size)
+        {
+            printf(":");
+        }
+    }
+    printf("\n");
+}
+#endif
+
 void data_comm_init(data_comm_t* data_comm,
                     spi_inst_t* spi,
                     uint spi_rx,
@@ -24,7 +39,7 @@ void data_comm_init(data_comm_t* data_comm,
 
     spi_init(spi, SPI_BAUDRATE);
     spi_set_slave(spi, true);
-    spi_set_format(spi, SPI_DATABITS, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+    spi_set_format(spi, SPI_DATABITS, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
 }
 
 raw_command_t data_comm_exchange_raw_data(data_comm_t* data_comm,
@@ -36,6 +51,13 @@ raw_command_t data_comm_exchange_raw_data(data_comm_t* data_comm,
                             (const uint8_t*) &raw_response,
                             (uint8_t*) &raw_command,
                             sizeof(raw_command_t));
+
+#ifdef DEBUG_PRINT
+    printf("Rx: ");
+    printhex((uint8_t*)&raw_command, sizeof(raw_command));
+    printf("Tx: ");
+    printhex((uint8_t*)&raw_response, sizeof(raw_response));
+#endif
 
     return raw_command;
 }
